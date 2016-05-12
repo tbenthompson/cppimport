@@ -1,1 +1,4 @@
 *.swp
+__pycache__
+build
+*.so
