@@ -51,6 +51,8 @@ def force_rebuild():
     should_force_rebuild = True
 
 
+# Subsitute in the module code and module name into a bare bones
+# pybind11 plugin
 def setup_plugin(module_name, filepath, tempdir):
     with open(filepath, 'r') as f:
         code = f.read()
@@ -76,12 +78,14 @@ def setup_plugin(module_name, filepath, tempdir):
 
     return temp_filename
 
+# I use .${filename}.cppimporthash as the checksum file for each module.
 def get_checksum_filepath(filepath):
     return os.path.join(
         os.path.dirname(filepath),
         '.' + os.path.basename(filepath) + '.cppimporthash'
     )
 
+# Use a checksum to see if the file has been changed since the last compilation
 def checksum_match(filepath):
     checksum_filepath = get_checksum_filepath(filepath)
     cur_checksum = hashlib.md5(
@@ -94,11 +98,15 @@ def checksum_match(filepath):
     open(checksum_filepath, 'w').write(cur_checksum)
     return False
 
+# Subclass setuptools Extension to add a parameter specifying where the shared
+# library should be placed after being compiled
 class ImportCppExt(setuptools.Extension):
     def __init__(self, libdest, *args, **kwargs):
         self.libdest = libdest
         setuptools.Extension.__init__(self, *args, **kwargs)
 
+# Subclass setuptools build_ext to put the compiled shared library in the
+# appropriate place in the source tree.
 class BuildImportCppExt(setuptools.command.build_ext.build_ext):
     def copy_extensions_to_source(self):
         for ext in self.extensions:
@@ -112,6 +120,11 @@ class BuildImportCppExt(setuptools.command.build_ext.build_ext):
                 verbose = self.verbose, dry_run = self.dry_run
             )
 
+# 1) Determine if the file has already been compiled into a shared lib by
+# looking at a checksum.
+# 2) build the plugin in a temporary directory while redirecting stdout.
+# 3) The "--inplace" argument specifies that the file should be moved into the
+# source tree, something handled by the BuildImportCppExt class
 def build_plugin(full_module_name, filepath):
     build_path = tempfile.mkdtemp()
     module_name = full_module_name.split('.')[-1]
@@ -199,6 +212,7 @@ class CppFinder(object):
         pass
 
     def find_module(self, fullname, path = None):
+        # Search through sys.path to find a C++ file that matches the module
         filepath = find_module_cpppath(fullname)
 
         if filepath is None or not os.path.exists(filepath):
@@ -209,4 +223,5 @@ class CppFinder(object):
         except Exception as e:
             print(traceback.format_exc())
 
+# Add the import hook.
 sys.meta_path.insert(0, CppFinder())
