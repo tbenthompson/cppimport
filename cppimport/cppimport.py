@@ -47,8 +47,8 @@ def stdchannel_redirected(stdchannel, dest_filename):
             dest_file.close()
 
 
-def setup_plugin(module_name, filename, tempdir):
-    with open(filename, 'r') as f:
+def setup_plugin(module_name, filepath, tempdir):
+    with open(filepath, 'r') as f:
         code = f.read()
 
     tmpl_args = dict()
@@ -63,31 +63,31 @@ def setup_plugin(module_name, filename, tempdir):
 
     return temp_filename
 
-def checksum_match(filename):
-    checksum_filename = '.' + filename + '.cppimporthash'
+def checksum_match(filepath):
+    checksum_filepath = '.' + filepath + '.cppimporthash'
     cur_checksum = hashlib.md5(
-        open(filename, 'r').read().encode('utf-8')
+        open(filepath, 'r').read().encode('utf-8')
     ).hexdigest()
-    if os.path.exists(checksum_filename):
-        saved_checksum = open(checksum_filename, 'r').read()
+    if os.path.exists(checksum_filepath):
+        saved_checksum = open(checksum_filepath, 'r').read()
         if saved_checksum == cur_checksum:
             return True
-    open(checksum_filename, 'w').write(cur_checksum)
+    open(checksum_filepath, 'w').write(cur_checksum)
     return False
 
-def build_plugin(module_name, filename):
+def build_plugin(module_name, filepath):
     build_path = tempfile.mkdtemp()
 
-    if checksum_match(filename):
+    if checksum_match(filepath):
         if not quiet:
-            print("Matching checksum for " + filename + " --> not compiling")
+            print("Matching checksum for " + filepath + " --> not compiling")
         return
-    print("Compiling " + filename)
+    print("Compiling " + filepath)
 
-    temp_filename = setup_plugin(module_name, filename, build_path)
+    temp_filepath = setup_plugin(module_name, filepath, build_path)
     ext = setuptools.Extension(
         module_name,
-        sources = [temp_filename],
+        sources = [temp_filepath],
         language = 'c++',
         include_dirs = [pybind11.get_include()],
         extra_compile_args = ['-std=c++11']
@@ -121,11 +121,12 @@ class CppFinder(object):
 
     def find_module(self, fullname, path = None):
         ext = '.cpp'
-        filename = fullname + ext
-        if not os.path.exists(filename):
+        filepath = fullname.replace('.', os.sep) + ext
+        print(filepath)
+        if not os.path.exists(filepath):
             return None
         try:
-            build_plugin(fullname, filename)
+            build_plugin(fullname, filepath)
         except Exception as e:
             print(traceback.format_exc())
         return None

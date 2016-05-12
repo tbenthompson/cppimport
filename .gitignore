@@ -1,5 +1,7 @@
 *.swp
-__pycache__
-build
+*.pyc
 *.so
 *.cppimporthash
+__pycache__
+build
+cppimport.egg-info
