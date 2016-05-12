@@ -202,6 +202,8 @@ def find_module_cpppath(modulename):
     modulefilename = os.path.basename(modulepath)
     matching_path_dirs = find_matching_path_dirs(moduledir)
     for d in matching_path_dirs:
+        if d == '':
+            d = os.getcwd()
         for f in os.listdir(d):
             if f == modulefilename:
                 return os.path.join(d, f)
