@@ -6,7 +6,7 @@ setup(
     zip_safe = False,
 
     name = 'cppimport',
-    version = '0.0.2',
+    version = '0.0.4',
     description = 'Import C++ files directly from Python!',
     long_description = """cppimport is a small import hook that determines whether there is a C++ source file that matches the requested module. If there is, the file is compiled as a Python extension using pybind11 and placed in the same folder as the C++ source file. Python is then able to find the module and load it.
 """,

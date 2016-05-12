@@ -131,6 +131,9 @@ def build_plugin(full_module_name, filepath):
     dir_name = os.path.dirname(filepath)
 
     ext_suffix = sysconfig.get_config_var('EXT_SUFFIX')
+    if ext_suffix is None:
+        ext_suffix = sysconfig.get_config_var('SO')
+
     ext_path = os.path.join(dir_name, module_name + ext_suffix)
 
     use_existing_extension = not should_force_rebuild and \
@@ -204,6 +207,10 @@ def find_module_cpppath(modulename):
     for d in matching_path_dirs:
         if d == '':
             d = os.getcwd()
+
+        if not os.path.exists(d):
+            continue
+
         for f in os.listdir(d):
             if f == modulefilename:
                 return os.path.join(d, f)
