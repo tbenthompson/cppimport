@@ -1,16 +1,17 @@
 import sys
 import os
 import shutil
+import string
 import tempfile
 import sysconfig
-import setuptools
-import setuptools.command.build_ext
 import distutils.file_util
-import pybind11
 import traceback
 import contextlib
-import mako.template
 import hashlib
+
+import setuptools
+import setuptools.command.build_ext
+import pybind11
 
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel, dest_filename):
@@ -39,20 +40,15 @@ def stdchannel_redirected(stdchannel, dest_filename):
 
 
 quiet = True
+should_force_rebuild = False
 
 def set_quiet(to):
     global quiet
     quiet = to
 
-template = """
-${code}
-
-PYBIND11_PLUGIN(${module_name}) {
-    pybind11::module m("${module_name}", "auto-compiled c++ extension");
-    pyexport(m);
-    return m.ptr();
-}
-"""
+def force_rebuild():
+    global should_force_rebuild
+    should_force_rebuild = True
 
 
 def setup_plugin(module_name, filepath, tempdir):
@@ -63,7 +59,16 @@ def setup_plugin(module_name, filepath, tempdir):
     tmpl_args['code'] = code
     tmpl_args['module_name'] = module_name
 
-    plugin_code = mako.template.Template(template).render(**tmpl_args)
+    template = """
+    $code
+
+    PYBIND11_PLUGIN($module_name) {
+        pybind11::module m("$module_name", "auto-compiled c++ extension");
+        pyexport(m);
+        return m.ptr();
+    }
+    """
+    plugin_code = string.Template(template).substitute(**tmpl_args)
 
     temp_filename = os.path.join(tempdir, module_name + '.cpp')
     with open(temp_filename, 'w') as f_tmp:
@@ -115,7 +120,11 @@ def build_plugin(full_module_name, filepath):
     ext_suffix = sysconfig.get_config_var('EXT_SUFFIX')
     ext_path = os.path.join(dir_name, module_name + ext_suffix)
 
-    if checksum_match(filepath) and os.path.exists(ext_path):
+    use_existing_extension = not should_force_rebuild and \
+        checksum_match(filepath) and \
+        os.path.exists(ext_path)
+
+    if use_existing_extension:
         if not quiet:
             print("Matching checksum for " + filepath + " --> not compiling")
         return

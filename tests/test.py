@@ -3,7 +3,6 @@ import cppimport
 import cppimport.import_hook as cppimp
 cppimport.set_quiet(False)
 
-
 def test_find_module_cpppath():
     mymodule_loc = cppimp.find_module_cpppath("mymodule")
     mymodule_dir = os.path.dirname(mymodule_loc)
