@@ -145,7 +145,8 @@ def build_plugin(full_module_name, filepath):
             print("Matching checksum for " + filepath + " --> not compiling")
         return
 
-    print("Compiling " + filepath)
+    if not quiet:
+        print("Compiling " + filepath)
 
     temp_filepath = setup_plugin(module_name, filepath, build_path)
 
