@@ -155,7 +155,10 @@ def build_plugin(full_module_name, filepath):
         full_module_name,
         sources = [temp_filepath],
         language = 'c++',
-        include_dirs = [pybind11.get_include()],
+        include_dirs = [
+            pybind11.get_include(),
+            pybind11.get_include(True)
+        ],
         extra_compile_args = [
             '-std=c++11', '-Wall', '-Werror'
         ]
@@ -210,6 +213,9 @@ def find_module_cpppath(modulename):
             d = os.getcwd()
 
         if not os.path.exists(d):
+            continue
+
+        if os.path.isfile(d):
             continue
 
         for f in os.listdir(d):
