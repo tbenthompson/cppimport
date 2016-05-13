@@ -8,7 +8,7 @@ I'm a big fan of the workflow that this enables, where you can edit both C++ fil
 You probably just need to run `pip install cppimport`. 
 Two caveats:
 * If you a super old compiler that doesn't support c++11, then it won't work. 
-* cppimport has only been tested on Unix, so if you'd like to use it on Windows, submit a pull request with the necessary fixes!
+* cppimport has only been tested on Unix, so if you'd like to use it on Windows, I'd love to see a pull request with the necessary fixes!
 
 # Let's try it
 Here's a simple C++ extension using [https://github.com/pybind/pybind11](pybind11):
