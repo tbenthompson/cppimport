@@ -1,6 +1,6 @@
 # Import C++ files directly from Python!
 
-cppimport is a small import hook that determines whether there is a C++ source file that matches the requested module. If there is, the file is compiled as a Python extension using [https://github.com/pybind/pybind11](pybind11) and placed in the same folder as the C++ source file. Python is then able to find the module and load it. 
+cppimport is a small import hook that determines whether there is a C++ source file that matches the requested module. If there is, the file is compiled as a Python extension using (pybind11)[https://github.com/pybind/pybind11] and placed in the same folder as the C++ source file. Python is then able to find the module and load it. 
 
 I'm a big fan of the workflow that this enables, where you can edit both C++ files and Python and recompilation happens transparently. 
 
@@ -11,7 +11,7 @@ Two caveats:
 * cppimport has only been tested on Unix, so if you'd like to use it on Windows, I'd love to see a pull request with the necessary fixes!
 
 # Let's try it
-Here's a simple C++ extension using [https://github.com/pybind/pybind11](pybind11):
+Here's a simple C++ extension using (pybind11)[https://github.com/pybind/pybind11]:
 ```c++
 #include <pybind11/pybind11.h>
 
@@ -35,7 +35,7 @@ Save this code as somecode.cpp. Now, open a python interpreter and run these lin
 81
 ```
 
-Voila! Now, go look at the [https://github.com/pybind/pybind11](pybind11) documentation for all the cool stuff you can now.
+Voila! Now, go look at the (pybind11)[https://github.com/pybind/pybind11] documentation for all the cool stuff you can now.
 
 #### Notes
 [1]: the pyexport function is called by an auto-generated PYBIND11_PLUGIN call, so that the module name can be substituted in by cppimport
