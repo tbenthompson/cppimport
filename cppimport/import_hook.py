@@ -1,5 +1,6 @@
-import sys
 import os
+import re
+import sys
 import shutil
 import string
 import tempfile
@@ -50,10 +51,15 @@ def force_rebuild():
     global should_force_rebuild
     should_force_rebuild = True
 
+def quiet_print(*args, **kwargs):
+    global quiet
+    if not quiet:
+        print(*args, **kwargs)
+
 
 # Subsitute in the module code and module name into a bare bones
 # pybind11 plugin
-def setup_plugin(module_name, filepath, tempdir):
+def template_plugin(module_name, filepath, tempdir):
     with open(filepath, 'r') as f:
         code = f.read()
 
@@ -85,12 +91,47 @@ def get_checksum_filepath(filepath):
         '.' + os.path.basename(filepath) + '.cppimporthash'
     )
 
+def extract_includes(filepath):
+    lines = open(filepath, 'r').read()
+    regex = '\"(.+?)\"'
+    includes = []
+    for l in lines.split('\n'):
+        if l.startswith('#include'):
+            m = re.findall(regex, l)
+            if len(m) > 0:
+                assert(len(m) == 1)
+                includes.append(m[0])
+    return includes
+
+def find_file_in_folders(filename, paths):
+    for d in paths:
+        if not os.path.exists(d):
+            continue
+
+        if os.path.isfile(d):
+            continue
+
+        for f in os.listdir(d):
+            if f == filename:
+                return os.path.join(d, f)
+    return None
+
+def calc_cur_checksum(filepath):
+    text = open(filepath, 'r').read().encode('utf-8')
+
+    include_files = extract_includes(filepath)
+    user_include_dirs = get_user_include_dirs(filepath)
+    for f in include_files:
+        inc_filepath = find_file_in_folders(f, user_include_dirs)
+        text += open(inc_filepath, 'r').read().encode('utf-8')
+    return hashlib.md5(text).hexdigest()
+
 # Use a checksum to see if the file has been changed since the last compilation
 def checksum_match(filepath):
     checksum_filepath = get_checksum_filepath(filepath)
-    cur_checksum = hashlib.md5(
-        open(filepath, 'r').read().encode('utf-8')
-    ).hexdigest()
+
+    cur_checksum = calc_cur_checksum(filepath)
+
     if os.path.exists(checksum_filepath):
         saved_checksum = open(checksum_filepath, 'r').read()
         if saved_checksum == cur_checksum:
@@ -119,47 +160,34 @@ class BuildImportCppExt(setuptools.command.build_ext.build_ext):
                 verbose = self.verbose, dry_run = self.dry_run
             )
 
-# 1) Determine if the file has already been compiled into a shared lib by
-# looking at a checksum.
-# 2) build the plugin in a temporary directory while redirecting stdout.
-# 3) The "--inplace" argument specifies that the file should be moved into the
-# source tree, something handled by the BuildImportCppExt class
-def build_plugin(full_module_name, filepath):
+def get_module_name(full_module_name):
+    return full_module_name.split('.')[-1]
+
+def get_ext_dir(filepath):
+    return os.path.dirname(filepath)
+
+def get_user_include_dirs(filepath):
+    return [
+        get_ext_dir(filepath)
+    ]
+
+def build_module(full_module_name, filepath):
     build_path = tempfile.mkdtemp()
-    module_name = full_module_name.split('.')[-1]
-    dir_name = os.path.dirname(filepath)
+    temp_filepath = template_plugin(
+        get_module_name(full_module_name), filepath, build_path
+    )
 
-    ext_suffix = sysconfig.get_config_var('EXT_SUFFIX')
-    if ext_suffix is None:
-        ext_suffix = sysconfig.get_config_var('SO')
-
-    ext_path = os.path.join(dir_name, module_name + ext_suffix)
-
-    checksum_good, checksum_save = checksum_match(filepath)
-
-    use_existing_extension = not should_force_rebuild and \
-        checksum_good and \
-        os.path.exists(ext_path)
-
-    if use_existing_extension:
-        if not quiet:
-            print("Matching checksum for " + filepath + " --> not compiling")
-        return
-
-    if not quiet:
-        print("Compiling " + filepath)
-
-    temp_filepath = setup_plugin(module_name, filepath, build_path)
+    system_include_dirs = [
+        pybind11.get_include(),
+        pybind11.get_include(True)
+    ]
 
     ext = ImportCppExt(
-        dir_name,
+        get_ext_dir(filepath),
         full_module_name,
         sources = [temp_filepath],
         language = 'c++',
-        include_dirs = [
-            pybind11.get_include(),
-            pybind11.get_include(True)
-        ],
+        include_dirs = system_include_dirs + get_user_include_dirs(filepath),
         extra_compile_args = [
             '-std=c++11', '-Wall', '-Werror'
         ]
@@ -192,7 +220,28 @@ def build_plugin(full_module_name, filepath):
 
     shutil.rmtree(build_path)
 
-    open(checksum_save[0], 'w').write(checksum_save[1])
+def get_extension_suffix():
+    ext_suffix = sysconfig.get_config_var('EXT_SUFFIX')
+    if ext_suffix is None:
+        ext_suffix = sysconfig.get_config_var('SO')
+    return ext_suffix
+
+def if_bad_checksum_build(full_module_name, filepath):
+    ext_name = get_module_name(full_module_name) + get_extension_suffix()
+    ext_path = os.path.join(get_ext_dir(filepath), ext_name)
+
+    checksum_good, checksum_save = checksum_match(filepath)
+
+    use_existing_extension = not should_force_rebuild and \
+        checksum_good and \
+        os.path.exists(ext_path)
+
+    if use_existing_extension:
+        quiet_print("Matching checksum for " + filepath + " --> not compiling")
+    else:
+        quiet_print("Compiling " + filepath)
+        build_module(full_module_name, filepath)
+        open(checksum_save[0], 'w').write(checksum_save[1])
 
 def find_matching_path_dirs(moduledir):
     if moduledir is '':
@@ -201,7 +250,7 @@ def find_matching_path_dirs(moduledir):
     ds = []
     for dir in sys.path:
         test_path = os.path.join(dir, moduledir)
-        if os.path.exists(test_path):
+        if os.path.exists(test_path) and os.path.isdir(test_path):
             ds.append(test_path)
     return ds
 
@@ -210,21 +259,9 @@ def find_module_cpppath(modulename):
     modulepath = modulename.replace('.', os.sep) + ext
     moduledir = os.path.dirname(modulepath)
     modulefilename = os.path.basename(modulepath)
-    matching_path_dirs = find_matching_path_dirs(moduledir)
-    for d in matching_path_dirs:
-        if d == '':
-            d = os.getcwd()
-
-        if not os.path.exists(d):
-            continue
-
-        if os.path.isfile(d):
-            continue
-
-        for f in os.listdir(d):
-            if f == modulefilename:
-                return os.path.join(d, f)
-    return None
+    matching_dirs = find_matching_path_dirs(moduledir)
+    matching_dirs = [os.getcwd() if d == '' else d for d in matching_dirs]
+    return find_file_in_folders(modulefilename, matching_dirs)
 
 class CppFinder(object):
     def __init__(self):
@@ -238,7 +275,7 @@ class CppFinder(object):
             return
 
         try:
-            build_plugin(fullname, filepath)
+            if_bad_checksum_build(fullname, filepath)
         except Exception as e:
             print(traceback.format_exc())
 
