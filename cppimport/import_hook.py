@@ -94,7 +94,7 @@ def checksum_match(filepath):
     if os.path.exists(checksum_filepath):
         saved_checksum = open(checksum_filepath, 'r').read()
         if saved_checksum == cur_checksum:
-            return True
+            return True, (checksum_filepath, cur_checksum)
     return False, (checksum_filepath, cur_checksum)
 
 # Subclass setuptools Extension to add a parameter specifying where the shared
