@@ -50,6 +50,6 @@ Now, go look at the [pybind11](https://github.com/pybind/pybind11) documentation
 
 [3]: Calling `cppimport.set_quiet(False)` will result in output that will be helpful in debugging compile errors. The default is to make the import process completely silent.
 
-[4]: If you have a more complex extension that requires adding include directories, multiple source files, or libraries, this project isn't currently useful for you. Let me know if you have suggestions on how to include these features smoothly.
+[4]: If you have a more complex extension that requires adding include directories, multiple source files, or libraries, this project isn't currently useful for you. I'd like to change that. Let me know if you have suggestions on how to include these features smoothly.
 
 # cppimport uses the MIT License
