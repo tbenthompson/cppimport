@@ -46,7 +46,7 @@ Now, go look at the [pybind11](https://github.com/pybind/pybind11) documentation
 #### Notes
 [1]: the pyexport function is called by an auto-generated PYBIND11_PLUGIN call, so that the module name can be substituted in by cppimport
 
-[2]: The compilation should only happen the first time the module is imported. The C++ source is compared with a checksum on each import to determine if the file has changed.
+[2]: The compilation should only happen the first time the module is imported. The C++ source is compared with a checksum on each import to determine if the file has changed. Included files are also incorporated into the checksum so recompilation happens automatically when a header file is edited.
 
 [3]: Calling `cppimport.set_quiet(False)` will result in output that will be helpful in debugging compile errors. The default is to make the import process completely silent.
 
