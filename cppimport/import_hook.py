@@ -95,8 +95,7 @@ def checksum_match(filepath):
         saved_checksum = open(checksum_filepath, 'r').read()
         if saved_checksum == cur_checksum:
             return True
-    open(checksum_filepath, 'w').write(cur_checksum)
-    return False
+    return False, (checksum_filepath, cur_checksum)
 
 # Subclass setuptools Extension to add a parameter specifying where the shared
 # library should be placed after being compiled
@@ -136,8 +135,10 @@ def build_plugin(full_module_name, filepath):
 
     ext_path = os.path.join(dir_name, module_name + ext_suffix)
 
+    checksum_good, checksum_save = checksum_match(filepath)
+
     use_existing_extension = not should_force_rebuild and \
-        checksum_match(filepath) and \
+        checksum_good and \
         os.path.exists(ext_path)
 
     if use_existing_extension:
@@ -190,6 +191,8 @@ def build_plugin(full_module_name, filepath):
         setuptools.setup(**setuptools_args)
 
     shutil.rmtree(build_path)
+
+    open(checksum_save[0], 'w').write(checksum_save[1])
 
 def find_matching_path_dirs(moduledir):
     if moduledir is '':
