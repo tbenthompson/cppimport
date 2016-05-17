@@ -23,8 +23,10 @@ int square(int x) {
     return x * x;
 }
 
-void pyexport(py::module& m) {
+PYBIND11_PLUGIN(somecode) {
+    pybind11::module m("somecode", "auto-compiled c++ extension");
     m.def("square", &square);
+    return m.ptr();
 }
 ```
 The `pyexport` function specifies which functions (or classes) are available from python [\[1\]](#notes).

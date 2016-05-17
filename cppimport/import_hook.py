@@ -42,6 +42,7 @@ def stdchannel_redirected(stdchannel, dest_filename):
 
 quiet = True
 should_force_rebuild = False
+file_exts = ['cpp']
 
 def set_quiet(to):
     global quiet

@@ -80,3 +80,7 @@ def test_rebuild_header_after_change():
 def test_compiler_flags():
     import cpp14module
     assert(cpp14module.add(1,2) == 3)
+
+def test_raw_extensions():
+    import raw_extension
+    assert(raw_extension.add(1,2) == 3)
