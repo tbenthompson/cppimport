@@ -6,6 +6,8 @@ int add(int i, int j) {
     return i + j;
 }
 
-void pyexport(py::module& m) {
+PYBIND11_PLUGIN(mymodule) {
+    pybind11::module m("mymodule", "auto-compiled c++ extension");
     m.def("add", &add);
+    return m.ptr();
 }

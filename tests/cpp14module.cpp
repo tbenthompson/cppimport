@@ -10,6 +10,8 @@ auto add(int i, int j) {
     return i + j;
 }
 
-void pyexport(py::module& m) {
+PYBIND11_PLUGIN(cpp14module) {
+    pybind11::module m("cpp14module", "auto-compiled c++ extension");
     m.def("add", &add);
+    return m.ptr();
 }

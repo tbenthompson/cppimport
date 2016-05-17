@@ -56,33 +56,6 @@ def quiet_print(*args, **kwargs):
     if not quiet:
         print(*args, **kwargs)
 
-
-# Subsitute in the module code and module name into a bare bones
-# pybind11 plugin
-def template_plugin(module_name, filepath, tempdir):
-    with open(filepath, 'r') as f:
-        code = f.read()
-
-    tmpl_args = dict()
-    tmpl_args['code'] = code
-    tmpl_args['module_name'] = module_name
-
-    template = """$code
-
-    PYBIND11_PLUGIN($module_name) {
-        pybind11::module m("$module_name", "auto-compiled c++ extension");
-        pyexport(m);
-        return m.ptr();
-    }
-    """
-    plugin_code = string.Template(template).substitute(**tmpl_args)
-
-    temp_filename = os.path.join(tempdir, module_name + '.cpp')
-    with open(temp_filename, 'w') as f_tmp:
-        f_tmp.write(plugin_code)
-
-    return temp_filename
-
 # I use .${filename}.cppimporthash as the checksum file for each module.
 def get_checksum_filepath(filepath):
     return os.path.join(
@@ -170,8 +143,8 @@ def get_user_include_dirs(filepath):
         get_ext_dir(filepath)
     ]
 
-def run_config(temp_filepath):
-    lines = open(temp_filepath, 'r').read().split('\n')
+def run_config_script(filepath):
+    lines = open(filepath, 'r').read().split('\n')
     config_match = [i for i in range(len(lines)) if lines[i]]
     first_line = None
     for i in range(len(lines)):
@@ -189,16 +162,19 @@ def run_config(temp_filepath):
         data = dict()
         data['config'] = ''
         exec('\n'.join(code), data)
-        return data
+        return config_script_globals
     return dict()
+
+def extract_config(cfg_globals):
+    cfg = dict()
+    cfg['compiler_args'] = cfg_globals.get('compiler_args', [])
+    return cfg
 
 def build_module(full_module_name, filepath):
     build_path = tempfile.mkdtemp()
-    temp_filepath = template_plugin(
-        get_module_name(full_module_name), filepath, build_path
-    )
 
-    cfg = run_config(temp_filepath)
+    cfg_globals = run_config_script(filepath)
+    cfg = extract_config(cfg_globals)
 
     system_include_dirs = [
         pybind11.get_include(),
@@ -208,7 +184,7 @@ def build_module(full_module_name, filepath):
     ext = ImportCppExt(
         get_ext_dir(filepath),
         full_module_name,
-        sources = [temp_filepath],
+        sources = [filepath],
         language = 'c++',
         include_dirs = system_include_dirs + get_user_include_dirs(filepath),
         extra_compile_args = [
