@@ -76,3 +76,7 @@ def test_rebuild_header_after_change():
     test_code = 'import cppimport;import mymodule;mymodule.Thing().cheer()'
     with appended('tests/thing.h', add_to_thing):
         subprocess_check(test_code)
+
+def test_compiler_flags():
+    import cpp14module
+    assert(cpp14module.add(1,2) == 3)

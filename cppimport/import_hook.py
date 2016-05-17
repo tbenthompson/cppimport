@@ -67,8 +67,7 @@ def template_plugin(module_name, filepath, tempdir):
     tmpl_args['code'] = code
     tmpl_args['module_name'] = module_name
 
-    template = """
-    $code
+    template = """$code
 
     PYBIND11_PLUGIN($module_name) {
         pybind11::module m("$module_name", "auto-compiled c++ extension");
@@ -171,11 +170,35 @@ def get_user_include_dirs(filepath):
         get_ext_dir(filepath)
     ]
 
+def run_config(temp_filepath):
+    lines = open(temp_filepath, 'r').read().split('\n')
+    config_match = [i for i in range(len(lines)) if lines[i]]
+    first_line = None
+    for i in range(len(lines)):
+        if lines[i].startswith('/* cppimport'):
+            first_line = i
+            break
+    if first_line is not None:
+        last_line = None
+        for i in range(first_line, len(lines)):
+            if lines[i].startswith('*/'):
+                last_line = i
+        assert(last_line is not None)
+        print(first_line, last_line)
+        code = lines[(first_line + 1):last_line]
+        data = dict()
+        data['config'] = ''
+        exec('\n'.join(code), data)
+        return data
+    return dict()
+
 def build_module(full_module_name, filepath):
     build_path = tempfile.mkdtemp()
     temp_filepath = template_plugin(
         get_module_name(full_module_name), filepath, build_path
     )
+
+    cfg = run_config(temp_filepath)
 
     system_include_dirs = [
         pybind11.get_include(),
@@ -190,7 +213,7 @@ def build_module(full_module_name, filepath):
         include_dirs = system_include_dirs + get_user_include_dirs(filepath),
         extra_compile_args = [
             '-std=c++11', '-Wall', '-Werror'
-        ]
+        ] + cfg['compiler_args']
     )
 
     args = ['build_ext', '--inplace']
