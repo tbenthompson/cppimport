@@ -45,7 +45,7 @@ Voila!
 
 Now, go look at the [pybind11](https://github.com/pybind/pybind11) documentation for all the cool stuff you can do!
 
-#### Notes
+# Notes
 [1]: the pyexport function is called by an auto-generated PYBIND11_PLUGIN call, so that the module name can be substituted in by cppimport
 
 [2]: The compilation should only happen the first time the module is imported. The C++ source is compared with a checksum on each import to determine if the file has changed.
