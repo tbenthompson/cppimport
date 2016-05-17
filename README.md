@@ -33,16 +33,14 @@ PYBIND11_PLUGIN(somecode) {
 Save this code as `somecode.cpp`.
 
 Open a python interpreter and run these lines [\[1\]](#notes):
-```
+```python
 >>> import cppimport
 >>> import somecode #This will pause for a moment to compile the module
 >>> somecode.square(9)
 81
 ```
 
-Voila! 
-
-Now, go forth and multiply your productivity!
+Voila! Now, go forth and multiply your productivity!
 
 #### Notes
 [1]: The compilation should only happen the first time the module is imported. The C++ source is compared with a checksum on each import to determine if the file has changed. Included files are also incorporated into the checksum so recompilation happens automatically when a header file is edited.

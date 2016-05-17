@@ -1,3 +1,6 @@
+/* cppimport
+compiler_args = ['-std=c++11']
+*/
 #include <pybind11/pybind11.h>
 #include "thing.h"
 

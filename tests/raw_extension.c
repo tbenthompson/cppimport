@@ -16,6 +16,7 @@
 
 static PyObject* add(PyObject* self, PyObject* args) {
     int a, b;
+    int class = 1;
     if (!PyArg_ParseTuple(args, "ii", &a, &b)) {
         return NULL;
     }

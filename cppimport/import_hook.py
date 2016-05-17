@@ -42,7 +42,7 @@ def stdchannel_redirected(stdchannel, dest_filename):
 
 quiet = True
 should_force_rebuild = False
-file_exts = ['cpp']
+file_exts = ['.cpp', '.c']
 
 def set_quiet(to):
     global quiet
@@ -56,6 +56,19 @@ def quiet_print(*args, **kwargs):
     global quiet
     if not quiet:
         print(*args, **kwargs)
+
+def find_file_in_folders(filename, paths):
+    for d in paths:
+        if not os.path.exists(d):
+            continue
+
+        if os.path.isfile(d):
+            continue
+
+        for f in os.listdir(d):
+            if f == filename:
+                return os.path.join(d, f)
+    return None
 
 # I use .${filename}.cppimporthash as the checksum file for each module.
 def get_checksum_filepath(filepath):
@@ -75,19 +88,6 @@ def extract_includes(filepath):
                 assert(len(m) == 1)
                 includes.append(m[0])
     return includes
-
-def find_file_in_folders(filename, paths):
-    for d in paths:
-        if not os.path.exists(d):
-            continue
-
-        if os.path.isfile(d):
-            continue
-
-        for f in os.listdir(d):
-            if f == filename:
-                return os.path.join(d, f)
-    return None
 
 def calc_cur_checksum(filepath):
     text = open(filepath, 'r').read().encode('utf-8')
@@ -144,7 +144,7 @@ def get_user_include_dirs(filepath):
         get_ext_dir(filepath)
     ]
 
-def run_config_script(filepath):
+def extract_config_script(filepath):
     lines = open(filepath, 'r').read().split('\n')
     config_match = [i for i in range(len(lines)) if lines[i]]
     first_line = None
@@ -160,22 +160,30 @@ def run_config_script(filepath):
         assert(last_line is not None)
         print(first_line, last_line)
         code = lines[(first_line + 1):last_line]
-        data = dict()
-        data['config'] = ''
-        exec('\n'.join(code), data)
-        return config_script_globals
-    return dict()
+        return '\n'.join(code)
+    return None
 
-def extract_config(cfg_globals):
+def run_config_script(filepath):
+    cfg_script = extract_config_script(filepath)
+    if cfg_script is None:
+        return dict()
+
+    data = dict()
+    data['config'] = ''
+    exec(cfg_script, data)
+    return data
+
+def form_config(cfg_globals):
     cfg = dict()
     cfg['compiler_args'] = cfg_globals.get('compiler_args', [])
+    cfg['linker_args'] = cfg_globals.get('linker_args', [])
     return cfg
 
 def build_module(full_module_name, filepath):
     build_path = tempfile.mkdtemp()
 
     cfg_globals = run_config_script(filepath)
-    cfg = extract_config(cfg_globals)
+    cfg = form_config(cfg_globals)
 
     system_include_dirs = [
         pybind11.get_include(),
@@ -186,11 +194,9 @@ def build_module(full_module_name, filepath):
         get_ext_dir(filepath),
         full_module_name,
         sources = [filepath],
-        language = 'c++',
         include_dirs = system_include_dirs + get_user_include_dirs(filepath),
-        extra_compile_args = [
-            '-std=c++11', '-Wall', '-Werror'
-        ] + cfg['compiler_args']
+        extra_compile_args = cfg['compiler_args'],
+        extra_link_args = cfg['linker_args']
     )
 
     args = ['build_ext', '--inplace']
@@ -255,13 +261,18 @@ def find_matching_path_dirs(moduledir):
     return ds
 
 def find_module_cpppath(modulename):
-    ext = '.cpp'
-    modulepath = modulename.replace('.', os.sep) + ext
-    moduledir = os.path.dirname(modulepath)
-    modulefilename = os.path.basename(modulepath)
+    modulepath_without_ext = modulename.replace('.', os.sep)
+    moduledir = os.path.dirname(modulepath_without_ext + '.throwaway')
     matching_dirs = find_matching_path_dirs(moduledir)
     matching_dirs = [os.getcwd() if d == '' else d for d in matching_dirs]
-    return find_file_in_folders(modulefilename, matching_dirs)
+
+    for ext in file_exts:
+        modulefilename = os.path.basename(modulepath_without_ext + ext)
+        outfilename = find_file_in_folders(modulefilename, matching_dirs)
+        if outfilename is not None:
+            return outfilename
+
+    return None
 
 class CppFinder(object):
     def __init__(self):
