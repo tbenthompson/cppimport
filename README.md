@@ -10,7 +10,7 @@ I'm a big fan of the workflow that this enables, where you can edit both C++ fil
 You probably just need to run `pip install cppimport`. 
 Two caveats:
 * If you a super old compiler that doesn't support c++11, then it won't work. 
-* cppimport has only been tested on Unix, so if you'd like to use it on Windows, I'd love to see a pull request with the necessary fixes!
+* cppimport has only been tested on OS X and Linux, so if you'd like to use it on Windows, I'd love to see a pull request with the necessary fixes!
 
 # Let's try it
 Here's a simple C++ extension using [pybind11](https://github.com/pybind/pybind11):
@@ -46,10 +46,10 @@ Now, go look at the [pybind11](https://github.com/pybind/pybind11) documentation
 #### Notes
 [1]: the pyexport function is called by an auto-generated PYBIND11_PLUGIN call, so that the module name can be substituted in by cppimport
 
-[2]: The compilation should only happen the first time the module is imported. The C++ source is compared with a checksum on each import to determine if the file has changed.
+[2]: The compilation should only happen the first time the module is imported. The C++ source is compared with a checksum on each import to determine if the file has changed. Included files are also incorporated into the checksum so recompilation happens automatically when a header file is edited.
 
 [3]: Calling `cppimport.set_quiet(False)` will result in output that will be helpful in debugging compile errors. The default is to make the import process completely silent.
 
-[4]: If you have a more complex extension that requires adding include directories, multiple source files, or libraries, this project isn't currently useful for you. Let me know if you have suggestions on how to include these features smoothly.
+[4]: If you have a more complex extension that requires adding include directories, multiple source files, or libraries, this project isn't currently useful for you. I'd like to change that. Let me know if you have suggestions on how to include these features smoothly.
 
 # cppimport uses the MIT License
