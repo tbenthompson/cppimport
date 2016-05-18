@@ -1,4 +1,5 @@
 import os
+import io
 import sys
 import copy
 import subprocess
@@ -22,6 +23,13 @@ def subprocess_check(test_code, returncode = 0):
     ], cwd = os.path.dirname(__file__))
     p.wait()
     assert(p.returncode == returncode)
+
+def test_redirected_stream():
+    sys.stderr = io.StringIO()
+    with cppimp.stdchannel_redirected("stdout") as s:
+        with cppimp.stdchannel_redirected("stderr"):
+            print("EEEP!")
+    assert(s.getvalue() == 'EEEP!\n')
 
 def test_find_module_cpppath():
     mymodule_loc = cppimp.find_module_cpppath("mymodule")

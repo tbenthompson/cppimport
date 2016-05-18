@@ -1,4 +1,5 @@
 import os
+import io
 import re
 import sys
 import shutil
@@ -15,30 +16,18 @@ import setuptools.command.build_ext
 import pybind11
 
 @contextlib.contextmanager
-def stdchannel_redirected(stdchannel, dest_filename):
+def stdchannel_redirected(stdchannel):
     """
-    From:
-    http://marc-abramowitz.com/archives/2013/07/19/python-context-manager-for-redirected-stdout-and-stderr/
-    A context manager to temporarily redirect stdout or stderr
-
-    e.g.:
-
-    with stdchannel_redirected(sys.stderr, os.devnull):
-        if compiler.has_function('clock_gettime', libraries=['rt']):
-            libraries.append('rt')
+    Redirects stdout or stderr to a StringIO object. As of python 3.4, there is a
+    standard library contextmanager for this, but backwards compatibility!
     """
     try:
-        oldstdchannel = os.dup(stdchannel.fileno())
-        dest_file = open(dest_filename, 'w')
-        os.dup2(dest_file.fileno(), stdchannel.fileno())
-
-        yield
+        s = io.StringIO()
+        old = getattr(sys, stdchannel)
+        setattr(sys, stdchannel, s)
+        yield s
     finally:
-        if oldstdchannel is not None:
-            os.dup2(oldstdchannel, stdchannel.fileno())
-        if dest_file is not None:
-            dest_file.close()
-
+        setattr(sys, stdchannel, old)
 
 quiet = True
 should_force_rebuild = False
@@ -218,8 +207,8 @@ def build_module(full_module_name, filepath):
     )
 
     if quiet:
-        with stdchannel_redirected(sys.stdout, os.devnull):
-            with stdchannel_redirected(sys.stderr, os.devnull):
+        with stdchannel_redirected("stdout"):
+            with stdchannel_redirected("stderr"):
                 setuptools.setup(**setuptools_args)
     else:
         setuptools.setup(**setuptools_args)
