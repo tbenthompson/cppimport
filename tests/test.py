@@ -1,7 +1,17 @@
+import io
 import os
+import sys
 import cppimport
 import cppimport.import_hook as cppimp
+# import cppimport.redirect_stream as redirect
 cppimport.set_quiet(False)
+
+def test_redirected_stream():
+    sys.stderr = io.StringIO()
+    with cppimp.stdchannel_redirected("stdout") as s:
+        with cppimp.stdchannel_redirected("stderr"):
+            print("EEEP!")
+    assert(s.getvalue() == 'EEEP!\n')
 
 def test_find_module_cpppath():
     mymodule_loc = cppimp.find_module_cpppath("mymodule")
@@ -30,6 +40,7 @@ def test_inner_package_mymodule():
     module_tester(apackage.inner.mymodule)
 
 if __name__ == '__main__':
+    test_redirected_stream()
     test_find_module_cpppath()
     test_mymodule()
     test_package_mymodule()
