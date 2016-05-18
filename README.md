@@ -41,10 +41,6 @@ Two caveats:
 * If you a super old compiler that doesn't support c++11, then it won't work. 
 * cppimport has only been tested on Unix, so if you'd like to use it on Windows, I'd love to see a pull request with the necessary fixes!
 
-Voila! 
-
-Now, go look at the [pybind11](https://github.com/pybind/pybind11) documentation for all the cool stuff you can do!
-
 # Notes
 [1]: the pyexport function is called by an auto-generated PYBIND11_PLUGIN call, so that the module name can be substituted in by cppimport
 
