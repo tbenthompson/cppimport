@@ -173,16 +173,9 @@ def build_plugin(full_module_name, filepath):
     )
 
     if quiet:
-        with stdchannel_redirected(sys.stdout, os.devnull):
-            with stdchannel_redirected(sys.stderr, os.devnull):
+        with stdchannel_redirected("stdout"):
+            with stdchannel_redirected("stderr"):
                 setuptools.setup(**setuptools_args)
-        # f = io.StringIO()
-        # with redirect_stdout(f):
-        #     with redirect_stderr(f):
-        #         try:
-        #             setuptools.setup(**setuptools_args)
-        #         except:
-        #             print(f)
     else:
         setuptools.setup(**setuptools_args)
 

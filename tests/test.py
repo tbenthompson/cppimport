@@ -3,7 +3,6 @@ import os
 import sys
 import cppimport
 import cppimport.import_hook as cppimp
-# import cppimport.redirect_stream as redirect
 cppimport.set_quiet(False)
 
 def test_redirected_stream():
