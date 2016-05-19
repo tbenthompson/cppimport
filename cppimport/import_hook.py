@@ -147,7 +147,6 @@ def extract_config_script(filepath):
             if lines[i].startswith('*/'):
                 last_line = i
         assert(last_line is not None)
-        print(first_line, last_line)
         code = lines[(first_line + 1):last_line]
         return '\n'.join(code)
     return None
@@ -221,6 +220,12 @@ def get_extension_suffix():
         ext_suffix = sysconfig.get_config_var('SO')
     return ext_suffix
 
+def delete_existing_extension(ext_path):
+    try:
+        os.remove(ext_path)
+    except OSError:
+        pass
+
 def if_bad_checksum_build(full_module_name, filepath):
     ext_name = get_module_name(full_module_name) + get_extension_suffix()
     ext_path = os.path.join(get_ext_dir(filepath), ext_name)
@@ -235,6 +240,7 @@ def if_bad_checksum_build(full_module_name, filepath):
         quiet_print("Matching checksum for " + filepath + " --> not compiling")
     else:
         quiet_print("Compiling " + filepath)
+        delete_existing_extension(ext_path)
         build_module(full_module_name, filepath)
         open(checksum_save[0], 'w').write(checksum_save[1])
 
