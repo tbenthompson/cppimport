@@ -3,7 +3,6 @@ import io
 import re
 import sys
 import shutil
-import string
 import tempfile
 import sysconfig
 import distutils.file_util
@@ -41,10 +40,10 @@ def force_rebuild():
     global should_force_rebuild
     should_force_rebuild = True
 
-def quiet_print(*args, **kwargs):
+def quiet_print(a):
     global quiet
     if not quiet:
-        print(*args, **kwargs)
+        print(a)
 
 def find_file_in_folders(filename, paths):
     for d in paths:
@@ -285,5 +284,5 @@ class CppFinder(object):
         except Exception as e:
             print(traceback.format_exc())
 
-# Add the import hook.
-sys.meta_path.insert(0, CppFinder())
+def install():
+    sys.meta_path.insert(0, CppFinder())
