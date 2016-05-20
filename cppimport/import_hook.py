@@ -1,6 +1,5 @@
 import sys
 import os
-import io
 import shutil
 import string
 import tempfile
@@ -13,6 +12,11 @@ import hashlib
 import setuptools
 import setuptools.command.build_ext
 import pybind11
+
+if sys.version_info[0] == 2:
+    import StringIO as io
+else:
+    import io
 
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel):
