@@ -132,33 +132,19 @@ def get_user_include_dirs(filepath):
         get_ext_dir(filepath)
     ]
 
-def extract_config_script(filepath):
-    lines = open(filepath, 'r').read().split('\n')
-    config_match = [i for i in range(len(lines)) if lines[i]]
-    first_line = None
-    for i in range(len(lines)):
-        if lines[i].startswith('/* cppimport'):
-            first_line = i
-            break
-    if first_line is not None:
-        last_line = None
-        for i in range(first_line, len(lines)):
-            if lines[i].startswith('*/'):
-                last_line = i
-        assert(last_line is not None)
-        code = lines[(first_line + 1):last_line]
-        return '\n'.join(code)
-    return None
-
-def run_config_script(filepath):
-    cfg_script = extract_config_script(filepath)
-    if cfg_script is None:
-        return dict()
+def run_templating(filepath):
+    import mako.template
+    import mako.runtime
 
     data = dict()
-    data['config'] = ''
-    exec(cfg_script, data)
-    return data
+    data['cfg'] = dict()
+    buf = StringIO()
+    ctx = mako.runtime.Context(buf, **data)
+
+    tmpl = mako.template.Template(filename = filepath)
+    rendered_tmpl = tmpl.render_context(ctx)
+
+    return data['cfg']
 
 def form_config(cfg_globals):
     cfg = dict()
@@ -169,7 +155,7 @@ def form_config(cfg_globals):
 def build_module(full_module_name, filepath):
     build_path = tempfile.mkdtemp()
 
-    cfg_globals = run_config_script(filepath)
+    cfg_globals = run_templating(filepath)
     cfg = form_config(cfg_globals)
 
     system_include_dirs = [

@@ -5,6 +5,7 @@ import copy
 import subprocess
 import contextlib
 import cppimport
+cppimport.install()
 import cppimport.import_hook as cppimp
 cppimport.set_quiet(False)
 
