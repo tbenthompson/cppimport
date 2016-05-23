@@ -1,5 +1,4 @@
 import os
-import io
 import re
 import sys
 import shutil
@@ -13,6 +12,11 @@ import hashlib
 import setuptools
 import setuptools.command.build_ext
 import pybind11
+
+if sys.version_info[0] == 2:
+    import StringIO as io
+else:
+    import io
 
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel):
@@ -138,7 +142,7 @@ def run_templating(filepath):
 
     data = dict()
     data['cfg'] = dict()
-    buf = StringIO()
+    buf = io.StringIO()
     ctx = mako.runtime.Context(buf, **data)
 
     tmpl = mako.template.Template(filename = filepath)
