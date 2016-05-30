@@ -154,7 +154,7 @@ def build_plugin(full_module_name, filepath):
             pybind11.get_include(True)
         ],
         extra_compile_args = [
-            '-std=c++11', '-Wall', '-Werror'
+            '-std=c++11'
         ]
     )
 
