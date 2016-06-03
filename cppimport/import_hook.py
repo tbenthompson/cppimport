@@ -8,6 +8,8 @@ import distutils.file_util
 import traceback
 import contextlib
 import hashlib
+import re
+import json
 
 import setuptools
 import setuptools.command.build_ext
@@ -17,6 +19,20 @@ if sys.version_info[0] == 2:
     import StringIO as io
 else:
     import io
+
+def merge(source, destination):
+    for key, value in source.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = destination.setdefault(key, {})
+            merge(value, node)
+        elif isinstance(value, list):
+            destination.setdefault(key, [])
+            destination[key] += value
+        else:
+            destination[key] = value
+
+    return destination
 
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel):
@@ -50,6 +66,11 @@ def setup_plugin(module_name, filepath, tempdir):
     with open(filepath, 'r') as f:
         code = f.read()
 
+    build = {}
+    m = re.search('^//cppimport (.+)', code)
+    if m:
+        build = json.loads(m.group(1))
+
     tmpl_args = dict()
     tmpl_args['code'] = code
     tmpl_args['module_name'] = module_name
@@ -69,7 +90,7 @@ def setup_plugin(module_name, filepath, tempdir):
     with open(temp_filename, 'w') as f_tmp:
         f_tmp.write(plugin_code)
 
-    return temp_filename
+    return [build, temp_filename]
 
 # I use .${filename}.cppimporthash as the checksum file for each module.
 def get_checksum_filepath(filepath):
@@ -142,20 +163,24 @@ def build_plugin(full_module_name, filepath):
     if not quiet:
         print("Compiling " + filepath)
 
-    temp_filepath = setup_plugin(module_name, filepath, build_path)
+    [build, temp_filepath] = setup_plugin(module_name, filepath, build_path)
 
-    ext = ImportCppExt(
-        dir_name,
-        full_module_name,
-        sources = [temp_filepath],
-        language = 'c++',
-        include_dirs = [
+    params = {
+        "sources": [temp_filepath],
+        "language": 'c++',
+        "include_dirs": [
             pybind11.get_include(),
             pybind11.get_include(True)
         ],
-        extra_compile_args = [
+        "extra_compile_args": [
             '-std=c++11', '-Wall', '-Werror'
         ]
+    }
+    merge(build, params)
+    ext = ImportCppExt(
+        dir_name,
+        full_module_name,
+        **params
     )
 
     args = ['build_ext', '--inplace']
