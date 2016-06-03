@@ -42,6 +42,9 @@ def test_find_module_cpppath():
     assert(cppimp.find_module_cpppath("apackage.mymodule") == apackage_path)
     assert(cppimp.find_module_cpppath("apackage.inner.mymodule") == apackage2_path)
 
+def test_get_rendered_source_filepath():
+    assert(cppimp.get_rendered_source_filepath('abc.cpp') == '.rendered.abc.cpp')
+
 def module_tester(mod, cheer = False):
     assert(mod.add(1,2) == 3)
     if cheer:
@@ -67,7 +70,10 @@ def test_with_file_in_syspath():
 
 def test_rebuild_after_failed_compile():
     import mymodule
-    test_code = 'import cppimport;import mymodule;assert(mymodule.add(1,2) == 3)'
+    test_code = '''
+import cppimport; cppimport.install()
+import mymodule;assert(mymodule.add(1,2) == 3)
+'''
     with appended('tests/mymodule.cpp', ";asdf;"):
         subprocess_check(test_code, 1)
     subprocess_check(test_code, 0)
@@ -82,13 +88,12 @@ def test_rebuild_header_after_change():
         };
         #define THING_DEFINED
         """
-    test_code = 'import cppimport;import mymodule;mymodule.Thing().cheer()'
+    test_code = '''
+import cppimport; cppimport.install()
+import mymodule;mymodule.Thing().cheer()
+'''
     with appended('tests/thing.h', add_to_thing):
         subprocess_check(test_code)
-
-def test_compiler_flags():
-    import cpp14module
-    assert(cpp14module.add(1,2) == 3)
 
 def test_raw_extensions():
     import raw_extension

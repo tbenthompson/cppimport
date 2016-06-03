@@ -2,6 +2,7 @@
 *.pyc
 *.so
 *.cppimporthash
+.rendered.*
 __pycache__
 build
 cppimport.egg-info

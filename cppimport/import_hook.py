@@ -12,6 +12,12 @@ import hashlib
 import setuptools
 import setuptools.command.build_ext
 import pybind11
+import mako.template
+import mako.runtime
+import mako.exceptions
+import mako.lookup
+
+
 
 if sys.version_info[0] == 2:
     import StringIO as io
@@ -136,44 +142,43 @@ def get_user_include_dirs(filepath):
         get_ext_dir(filepath)
     ]
 
-def run_templating(filepath):
-    import mako.template
-    import mako.runtime
+def get_rendered_source_filepath(filepath):
+    dirname = os.path.dirname(filepath)
+    filename = os.path.basename(filepath)
+    return os.path.join(dirname, '.rendered.' + filename)
 
+def run_templating(filepath):
     data = dict()
     data['cfg'] = dict()
     buf = io.StringIO()
     ctx = mako.runtime.Context(buf, **data)
 
-    tmpl = mako.template.Template(filename = filepath)
-    rendered_tmpl = tmpl.render_context(ctx)
+    lookup = mako.lookup.TemplateLookup(directories=[os.path.dirname(filepath)])
+    tmpl = mako.template.Template(filename = filepath, lookup = lookup)
 
-    return data['cfg']
+    try:
+        rendered_src = tmpl.render_context(ctx)
+    except:
+        print(mako.exceptions.text_error_template().render())
 
-def form_config(cfg_globals):
-    cfg = dict()
-    cfg['compiler_args'] = cfg_globals.get('compiler_args', [])
-    cfg['linker_args'] = cfg_globals.get('linker_args', [])
-    return cfg
+    rendered_src_filepath = get_rendered_source_filepath(filepath)
+    open(rendered_src_filepath, 'w').write(buf.getvalue())
+
+    return rendered_src_filepath, data['cfg']
 
 def build_module(full_module_name, filepath):
     build_path = tempfile.mkdtemp()
 
-    cfg_globals = run_templating(filepath)
-    cfg = form_config(cfg_globals)
-
-    system_include_dirs = [
-        pybind11.get_include(),
-        pybind11.get_include(True)
-    ]
+    rendered_src_filepath, cfg = run_templating(filepath)
 
     ext = ImportCppExt(
         get_ext_dir(filepath),
         full_module_name,
-        sources = [filepath],
-        include_dirs = system_include_dirs + get_user_include_dirs(filepath),
-        extra_compile_args = cfg['compiler_args'],
-        extra_link_args = cfg['linker_args']
+        language = 'c++',
+        sources = [rendered_src_filepath],
+        include_dirs = cfg.get('include_dirs', []) + [get_ext_dir(filepath)],
+        extra_compile_args = cfg.get('compiler_args', []),
+        extra_link_args = cfg.get('linker_args', [])
     )
 
     args = ['build_ext', '--inplace']

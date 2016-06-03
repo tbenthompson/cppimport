@@ -1,5 +1,9 @@
-/* cppimport
-compiler_args = ['-std=c++11']
+/*
+<%
+import pybind11
+cfg['compiler_args'] = ['-std=c++11']
+cfg['include_dirs'] = [pybind11.get_include(), pybind11.get_include(True)]
+%>
 */
 #include <pybind11/pybind11.h>
 
