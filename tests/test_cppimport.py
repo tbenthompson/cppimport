@@ -6,9 +6,6 @@ import subprocess
 import contextlib
 
 import cppimport
-import cppimport.templating
-import cppimport.importer
-import cppimport.build_module
 cppimport.set_quiet(False)
 
 @contextlib.contextmanager
@@ -35,15 +32,15 @@ def test_redirected_stream():
     assert(s.getvalue() == 'EEEP!\n')
 
 def test_find_module_cpppath():
-    mymodule_loc = cppimport.importer.find_module_cpppath("mymodule")
+    mymodule_loc = cppimport.find.find_module_cpppath("mymodule")
     mymodule_dir = os.path.dirname(mymodule_loc)
     assert(os.path.basename(mymodule_loc) == "mymodule.cpp")
 
-    apackage = cppimport.importer.find_module_cpppath("apackage.mymodule")
+    apackage = cppimport.find.find_module_cpppath("apackage.mymodule")
     apackage_correct = os.path.join(mymodule_dir, 'apackage', 'mymodule.cpp')
     assert(apackage == apackage_correct)
 
-    inner = cppimport.importer.find_module_cpppath("apackage.inner.mymodule")
+    inner = cppimport.find.find_module_cpppath("apackage.inner.mymodule")
     inner_correct = os.path.join(mymodule_dir, 'apackage', 'inner', 'mymodule.cpp')
     assert(inner == inner_correct)
 

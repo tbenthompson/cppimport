@@ -9,7 +9,6 @@ import distutils
 import setuptools
 import setuptools.command.build_ext
 import cppimport.config
-import cppimport.templating
 
 if sys.version_info[0] == 2:
     import StringIO as io
@@ -52,16 +51,18 @@ class BuildImportCppExt(setuptools.command.build_ext.build_ext):
                 verbose = self.verbose, dry_run = self.dry_run
             )
 
-def build_module(full_module_name, filepath):
+def build_module(module_data):
     build_path = tempfile.mkdtemp()
 
-    rendered_src_filepath, cfg = cppimport.templating.run_templating(filepath)
+    full_module_name = module_data['fullname']
+    filepath = module_data['filepath']
+    cfg = module_data['cfg']
 
     ext = ImportCppExt(
         os.path.dirname(filepath),
         full_module_name,
         language = 'c++',
-        sources = [rendered_src_filepath],
+        sources = [module_data['rendered_src_filepath']],
         include_dirs = cfg.get('include_dirs', []) + [os.path.dirname(filepath)],
         extra_compile_args = cfg.get('compiler_args', []),
         extra_link_args = cfg.get('linker_args', [])
