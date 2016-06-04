@@ -4,9 +4,11 @@ import sys
 import copy
 import subprocess
 import contextlib
+
 import cppimport
-cppimport.install()
-import cppimport.import_hook as cppimp
+import cppimport.templating
+import cppimport.importer
+import cppimport.build_module
 cppimport.set_quiet(False)
 
 @contextlib.contextmanager
@@ -27,23 +29,27 @@ def subprocess_check(test_code, returncode = 0):
 
 def test_redirected_stream():
     sys.stderr = io.StringIO()
-    with cppimp.stdchannel_redirected("stdout") as s:
-        with cppimp.stdchannel_redirected("stderr"):
+    with cppimport.build_module.stdchannel_redirected("stdout") as s:
+        with cppimport.build_module.stdchannel_redirected("stderr"):
             print("EEEP!")
     assert(s.getvalue() == 'EEEP!\n')
 
 def test_find_module_cpppath():
-    mymodule_loc = cppimp.find_module_cpppath("mymodule")
+    mymodule_loc = cppimport.importer.find_module_cpppath("mymodule")
     mymodule_dir = os.path.dirname(mymodule_loc)
     assert(os.path.basename(mymodule_loc) == "mymodule.cpp")
 
-    apackage_path = os.path.join(mymodule_dir, 'apackage', 'mymodule.cpp')
-    apackage2_path = os.path.join(mymodule_dir, 'apackage', 'inner', 'mymodule.cpp')
-    assert(cppimp.find_module_cpppath("apackage.mymodule") == apackage_path)
-    assert(cppimp.find_module_cpppath("apackage.inner.mymodule") == apackage2_path)
+    apackage = cppimport.importer.find_module_cpppath("apackage.mymodule")
+    apackage_correct = os.path.join(mymodule_dir, 'apackage', 'mymodule.cpp')
+    assert(apackage == apackage_correct)
+
+    inner = cppimport.importer.find_module_cpppath("apackage.inner.mymodule")
+    inner_correct = os.path.join(mymodule_dir, 'apackage', 'inner', 'mymodule.cpp')
+    assert(inner == inner_correct)
 
 def test_get_rendered_source_filepath():
-    assert(cppimp.get_rendered_source_filepath('abc.cpp') == '.rendered.abc.cpp')
+    rendered_path = cppimport.templating.get_rendered_source_filepath('abc.cpp')
+    assert(rendered_path == '.rendered.abc.cpp')
 
 def module_tester(mod, cheer = False):
     assert(mod.add(1,2) == 3)
@@ -51,35 +57,34 @@ def module_tester(mod, cheer = False):
         mod.Thing().cheer()
 
 def test_mymodule():
-    import mymodule
+    mymodule = cppimport.imp("mymodule")
     module_tester(mymodule)
 
 def test_package_mymodule():
-    import apackage.mymodule
+    apackage = cppimport.imp("apackage.mymodule")
     module_tester(apackage.mymodule)
 
 def test_inner_package_mymodule():
-    import apackage.inner.mymodule
+    apackage = cppimport.imp("apackage.inner.mymodule")
     module_tester(apackage.inner.mymodule)
 
 def test_with_file_in_syspath():
     orig_sys_path = copy.copy(sys.path)
     sys.path.append(os.path.join(os.path.dirname(__file__), 'mymodule.cpp'))
-    import mymodule
+    mymodule = cppimport.imp("mymodule")
     sys.path = orig_sys_path
 
 def test_rebuild_after_failed_compile():
-    import mymodule
+    mymodule = cppimport.imp("mymodule")
     test_code = '''
-import cppimport; cppimport.install()
-import mymodule;assert(mymodule.add(1,2) == 3)
+import cppimport; mymodule = cppimport.imp("mymodule");assert(mymodule.add(1,2) == 3)
 '''
     with appended('tests/mymodule.cpp', ";asdf;"):
         subprocess_check(test_code, 1)
     subprocess_check(test_code, 0)
 
 def test_rebuild_header_after_change():
-    import mymodule
+    mymodule = cppimport.imp("mymodule")
     add_to_thing = """
         struct Thing {
             void cheer() {
@@ -89,12 +94,11 @@ def test_rebuild_header_after_change():
         #define THING_DEFINED
         """
     test_code = '''
-import cppimport; cppimport.install()
-import mymodule;mymodule.Thing().cheer()
+import cppimport; mymodule = cppimport.imp("mymodule"); mymodule.Thing().cheer()
 '''
     with appended('tests/thing.h', add_to_thing):
         subprocess_check(test_code)
 
 def test_raw_extensions():
-    import raw_extension
+    raw_extension = cppimport.imp("raw_extension")
     assert(raw_extension.add(1,2) == 3)
