@@ -114,7 +114,7 @@ def test_raw_extensions():
 
 def test_cpprun():
     p = subprocess.Popen([
-        'cpprun', 'free_module.cpp'
+        'cpprun', '-m', 'free_module.cpp'
     ], cwd = os.path.dirname(__file__), stdout = subprocess.PIPE)
     p.wait()
     assert(b'HI!\n' == p.stdout.read())

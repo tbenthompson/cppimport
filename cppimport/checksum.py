@@ -22,8 +22,11 @@ def checksum(module_data):
     filepath = module_data['filepath']
     checksum_filepath = get_checksum_filepath(filepath)
 
+    dependency_dirs = (
+        module_data['cfg'].get('include_dirs', []) + [module_data['filedirname']]
+    )
     dep_filepaths = [
-        cppimport.find.find_file_in_folders(d, module_data['dependency_dirs'])
+        cppimport.find.find_file_in_folders(d, dependency_dirs)
         for d in module_data['cfg'].get('dependencies', [])
     ] + [filepath]
     cur_checksum = calc_cur_checksum(dep_filepaths, module_data)

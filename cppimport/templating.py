@@ -15,12 +15,12 @@ def get_rendered_source_filepath(filepath):
     filename = os.path.basename(filepath)
     return os.path.join(dirname, '.rendered.' + filename)
 
-def run_templating(filepath):
-    data = dict()
-    data['cfg'] = dict()
+def run_templating(module_data):
+    module_data['cfg'] = dict()
     buf = io.StringIO()
-    ctx = mako.runtime.Context(buf, **data)
+    ctx = mako.runtime.Context(buf, **module_data)
 
+    filepath = module_data['filepath']
     lookup = mako.lookup.TemplateLookup(directories=[os.path.dirname(filepath)])
     tmpl = mako.template.Template(filename = filepath, lookup = lookup)
 
@@ -31,5 +31,4 @@ def run_templating(filepath):
 
     rendered_src_filepath = get_rendered_source_filepath(filepath)
     open(rendered_src_filepath, 'w').write(buf.getvalue())
-
-    return rendered_src_filepath, data['cfg']
+    module_data['rendered_src_filepath'] = rendered_src_filepath

@@ -17,7 +17,7 @@ def get_extension_suffix():
         ext_suffix = sysconfig.get_config_var('SO')
     return ext_suffix
 
-def setup_module_data(fullname, filepath, rendered_src_filepath, cfg):
+def setup_module_data(fullname, filepath):
     module_data = dict()
     module_data['fullname'] = fullname
     module_data['filepath'] = filepath
@@ -27,11 +27,6 @@ def setup_module_data(fullname, filepath, rendered_src_filepath, cfg):
     module_data['ext_path'] = os.path.join(
         os.path.dirname(filepath), module_data['ext_name']
     )
-    module_data['rendered_src_filepath'] = rendered_src_filepath
-    module_data['dependency_dirs'] = (
-        cfg.get('include_dirs', []) + [module_data['filedirname']]
-    )
-    module_data['cfg'] = cfg
     return module_data
 
 def should_rebuild(module_data):
@@ -53,8 +48,8 @@ def imp(fullname):
             "Couldn't find a file matching the module name " + str(fullname)
         )
 
-    rendered_src_filepath, cfg = cppimport.templating.run_templating(filepath)
-    module_data = setup_module_data(fullname, filepath, rendered_src_filepath, cfg)
+    module_data = setup_module_data(fullname, filepath)
+    cppimport.templating.run_templating(module_data)
 
     quiet_print = cppimport.config.quiet_print
     shd_rbld, checksum = should_rebuild(module_data)
