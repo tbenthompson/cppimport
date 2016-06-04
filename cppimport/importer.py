@@ -35,20 +35,14 @@ def setup_module_data(fullname, filepath, rendered_src_filepath, cfg):
     return module_data
 
 def should_rebuild(module_data):
-    if not os.path.exists(module_data['ext_path']):
-        return True
-    if cppimport.config.should_force_rebuild:
-        return True
-    checksum_good, checksum_save = cppimport.checksum.checksum(
-        module_data['filepath'],
-        module_data['cfg'].get('dependencies', []),
-        module_data['dependency_dirs']
-    )
-    if not checksum_good:
-        return True
+    checksum_good, checksum = cppimport.checksum.checksum(module_data)
 
-    open(checksum_save[0], 'w').write(checksum_save[1])
-    return False
+    if (not os.path.exists(module_data['ext_path']) or
+            not checksum_good or
+            cppimport.config.should_force_rebuild):
+        return True, checksum
+
+    return False, checksum
 
 def imp(fullname):
     # Search through sys.path to find a file that matches the module
@@ -63,9 +57,11 @@ def imp(fullname):
     module_data = setup_module_data(fullname, filepath, rendered_src_filepath, cfg)
 
     quiet_print = cppimport.config.quiet_print
-    if should_rebuild(module_data):
+    shd_rbld, checksum = should_rebuild(module_data)
+    if shd_rbld:
         quiet_print("Compiling " + filepath)
         cppimport.build_module.build_module(module_data)
+        cppimport.checksum.checksum_save(module_data['filepath'], checksum)
     else:
         quiet_print("Matching checksum for " + filepath + " --> not compiling")
     return __import__(fullname)

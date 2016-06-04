@@ -8,6 +8,7 @@ cfg['include_dirs'] = [pybind11.get_include(), pybind11.get_include(True)]
 */
 #include <pybind11/pybind11.h>
 #include "thing.h"
+#include "thing2.h"
 
 namespace py = pybind11;
 

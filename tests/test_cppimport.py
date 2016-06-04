@@ -80,18 +80,30 @@ import cppimport; mymodule = cppimport.imp("mymodule");assert(mymodule.add(1,2) 
         subprocess_check(test_code, 1)
     subprocess_check(test_code, 0)
 
+add_to_thing = """
+#include <iostream>
+struct Thing {
+    void cheer() {
+        std::cout << "WAHHOOOO" << std::endl;
+    }
+};
+#define THING_DEFINED
+"""
+
+def test_no_rebuild_if_no_deps_change():
+    mymodule = cppimport.imp("mymodule")
+    test_code = '''
+import cppimport;
+mymodule = cppimport.imp("mymodule");
+assert(not hasattr(mymodule, 'Thing'))
+'''
+    with appended('tests/thing2.h', add_to_thing):
+        subprocess_check(test_code)
+
 def test_rebuild_header_after_change():
     mymodule = cppimport.imp("mymodule")
-    add_to_thing = """
-        struct Thing {
-            void cheer() {
-                std::cout << "WAHHOOOO" << std::endl;
-            }
-        };
-        #define THING_DEFINED
-        """
     test_code = '''
-import cppimport; mymodule = cppimport.imp("mymodule"); mymodule.Thing().cheer()
+import cppimport; cppimport.set_quiet(False); mymodule = cppimport.imp("mymodule"); mymodule.Thing().cheer()
 '''
     with appended('tests/thing.h', add_to_thing):
         subprocess_check(test_code)
@@ -99,3 +111,10 @@ import cppimport; mymodule = cppimport.imp("mymodule"); mymodule.Thing().cheer()
 def test_raw_extensions():
     raw_extension = cppimport.imp("raw_extension")
     assert(raw_extension.add(1,2) == 3)
+
+def test_cpprun():
+    p = subprocess.Popen([
+        'cpprun', 'free_module.cpp'
+    ], cwd = os.path.dirname(__file__), stdout = subprocess.PIPE)
+    p.wait()
+    assert(b'HI!\n' == p.stdout.read())
