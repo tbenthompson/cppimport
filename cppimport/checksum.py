@@ -1,8 +1,10 @@
 import os
 import pickle
 import hashlib
+import traceback
 
 import cppimport.find
+import cppimport.config
 
 # I use .${filename}.cppimporthash as the checksum file for each module.
 def get_checksum_filepath(filepath):
@@ -24,7 +26,14 @@ def is_checksum_current(module_data):
     if not os.path.exists(checksum_filepath):
         return False
 
-    deps, old_checksum = pickle.load(open(checksum_filepath, 'rb'))
+    try:
+        deps, old_checksum = pickle.load(open(checksum_filepath, 'rb'))
+    except ValueError as e:
+        cppimport.config.quiet_print(
+            "Failed to load checksum due to exception" + traceback.format_exc()
+        )
+        return False
+
     cur_checksum = calc_cur_checksum(deps, module_data)
     if old_checksum != cur_checksum:
         return False

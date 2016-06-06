@@ -10,7 +10,7 @@ setup(
     packages = ['cppimport'],
 
     install_requires = [
-        'mako', 'pybind11', 'pytest'
+        'mako', 'pybind11'
     ],
     zip_safe = False,
     entry_points = {

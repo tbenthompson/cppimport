@@ -9,3 +9,4 @@ build
 cppimport.egg-info
 dist
 .cache
+.tox

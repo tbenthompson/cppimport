@@ -1,0 +1,3 @@
+include tox.ini
+include README.md
+recursive-include tests *
