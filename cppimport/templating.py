@@ -1,22 +1,35 @@
 import os
 import sys
-import mako.template
-import mako.runtime
-import mako.exceptions
-import mako.lookup
-
-if sys.version_info[0] == 2:
-    import StringIO as io
-else:
-    import io
 
 def get_rendered_source_filepath(filepath):
     dirname = os.path.dirname(filepath)
     filename = os.path.basename(filepath)
     return os.path.join(dirname, '.rendered.' + filename)
 
+def setup_pybind11(cfg):
+    import pybind11
+    cfg['include_dirs'] = (
+        cfg.get('include_dirs', []) +
+        [pybind11.get_include(), pybind11.get_include(True)]
+    )
+    cfg['compiler_args'] = (
+        cfg.get('compiler_args', []) +
+        ['-std=c++11']
+    )
+
 def run_templating(module_data):
+    import mako.template
+    import mako.runtime
+    import mako.exceptions
+    import mako.lookup
+
+    if sys.version_info[0] == 2:
+        import StringIO as io
+    else:
+        import io
+
     module_data['cfg'] = dict()
+    module_data['setup_pybind11'] = setup_pybind11
     buf = io.StringIO()
     ctx = mako.runtime.Context(buf, **module_data)
 

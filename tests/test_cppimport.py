@@ -6,6 +6,8 @@ import subprocess
 import contextlib
 
 import cppimport
+import cppimport.build_module
+import cppimport.templating
 cppimport.set_quiet(False)
 
 @contextlib.contextmanager
@@ -111,6 +113,10 @@ import cppimport; cppimport.set_quiet(False); mymodule = cppimport.imp("mymodule
 def test_raw_extensions():
     raw_extension = cppimport.imp("raw_extension")
     assert(raw_extension.add(1,2) == 3)
+
+def test_extra_sources():
+    mod = cppimport.imp("extra_sources")
+    assert(mod.square_sum(3, 4) == 25)
 
 def test_cpprun():
     p = subprocess.Popen([

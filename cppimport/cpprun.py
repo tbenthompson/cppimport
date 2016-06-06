@@ -1,6 +1,8 @@
+import time
 import os
 import sys
 import argparse
+
 import cppimport
 
 footer = """
@@ -37,9 +39,7 @@ def cpp_run():
         cppimport.set_quiet(False)
 
     filename = args.filename
-
     filedir = os.path.dirname(filename)
-
     filebasename = os.path.basename(filename)
     module_name, file_extension = os.path.splitext(filebasename)
 
@@ -58,6 +58,7 @@ def cpp_run():
     if args.verbose:
         print("Launching!")
     module.main()
+
 
 if __name__ == '__main__':
     cpp_run()
