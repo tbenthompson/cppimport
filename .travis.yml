@@ -13,7 +13,7 @@ addons:
     - gcc-5
     - g++-5
 install:
-  - CC=gcc-5 CXX=g++-5 python setup.py install
+  - python setup.py install
 script:
-  - py.test
+  - CC=gcc-5 CXX=g++-5 py.test
 
