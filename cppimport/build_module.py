@@ -62,10 +62,11 @@ def build_module(module_data):
         os.path.dirname(filepath),
         full_module_name,
         language = 'c++',
-        sources = [module_data['rendered_src_filepath']],
+        sources = [module_data['rendered_src_filepath']] + cfg.get('sources', []),
         include_dirs = cfg.get('include_dirs', []) + [os.path.dirname(filepath)],
         extra_compile_args = cfg.get('compiler_args', []),
-        extra_link_args = cfg.get('linker_args', [])
+        extra_link_args = cfg.get('linker_args', []),
+        libraries = cfg.get('libraries', [])
     )
 
     args = ['build_ext', '--inplace']
