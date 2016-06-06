@@ -25,7 +25,6 @@ def is_checksum_current(module_data):
         return False
 
     deps, old_checksum = pickle.load(open(checksum_filepath, 'rb'))
-    print(deps)
     cur_checksum = calc_cur_checksum(deps, module_data)
     if old_checksum != cur_checksum:
         return False
