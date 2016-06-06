@@ -9,7 +9,9 @@ except (IOError, ImportError):
 setup(
     packages = ['cppimport'],
 
-    install_requires = ['pybind11'],
+    install_requires = [
+        'mako', 'pybind11'
+    ],
     zip_safe = False,
     entry_points = {
         'console_scripts': [
