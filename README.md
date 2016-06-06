@@ -4,9 +4,7 @@ Let's try it out. First, if you're on Linux or OS X, install with the terminal c
 Here's a simple C++ extension using [pybind11](https://github.com/pybind/pybind11):
 ```c++
 <%
-import pybind11
-cfg['compiler_args'] = ['-std=c++11']
-cfg['include_dirs'] = [pybind11.get_include(), pybind11.get_include(True)]
+setup_pybind11(cfg)
 %>
 #include <pybind11/pybind11.h>
 

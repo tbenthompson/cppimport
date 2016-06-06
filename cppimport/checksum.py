@@ -25,6 +25,7 @@ def is_checksum_current(module_data):
         return False
 
     deps, old_checksum = pickle.load(open(checksum_filepath, 'rb'))
+    print(deps)
     cur_checksum = calc_cur_checksum(deps, module_data)
     if old_checksum != cur_checksum:
         return False
@@ -33,13 +34,10 @@ def is_checksum_current(module_data):
 def checksum_save(module_data):
     checksum_filepath = get_checksum_filepath(module_data['filepath'])
 
-    dependency_dirs = (
-        module_data['cfg'].get('include_dirs', []) + [module_data['filedirname']]
-    )
     dep_filepaths = [
-        cppimport.find.find_file_in_folders(d, dependency_dirs)
+        cppimport.find.find_file_in_folders(d, module_data['dependency_dirs'])
         for d in module_data['cfg'].get('dependencies', [])
-    ] + [module_data['filepath']]
+    ] + module_data['extra_source_filepaths'] + [module_data['filepath']]
 
     cur_checksum = calc_cur_checksum(dep_filepaths, module_data)
     pickle.dump((dep_filepaths, cur_checksum), open(checksum_filepath, 'wb'))

@@ -58,11 +58,23 @@ def build_module(module_data):
     filepath = module_data['filepath']
     cfg = module_data['cfg']
 
+    module_data['dependency_dirs'] = (
+        module_data['cfg'].get('include_dirs', []) +
+        [module_data['filedirname']]
+    )
+    module_data['extra_source_filepaths'] = [
+        cppimport.find.find_file_in_folders(d, module_data['dependency_dirs'])
+        for d in cfg.get('sources', [])
+    ]
+
     ext = ImportCppExt(
         os.path.dirname(filepath),
         full_module_name,
         language = 'c++',
-        sources = [module_data['rendered_src_filepath']] + cfg.get('sources', []),
+        sources = (
+            module_data['extra_source_filepaths'] +
+            [module_data['rendered_src_filepath']]
+        ),
         include_dirs = cfg.get('include_dirs', []) + [os.path.dirname(filepath)],
         extra_compile_args = cfg.get('compiler_args', []),
         extra_link_args = cfg.get('linker_args', []),
