@@ -65,6 +65,6 @@ Calling `cppimport.set_quiet(False)` will result in output that will be helpful 
 Call `cppimport.force_rebuild()` before running `cppimport.imp(...)`.
 
 ### Windows?
-I don't know if `cppimport` works on Windows. If you're on Windows and you really want cppimport, I'll happily accept a pull request.
+I don't know if `cppimport` works on Windows. If you're on Windows, try it out and I'll happily accept a pull request for any issues that you fix.
 
 # cppimport uses the MIT License
