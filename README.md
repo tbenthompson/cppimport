@@ -1,4 +1,4 @@
-# If you've used cppimport version 0.0.*, some new features for you! Compiler arguments, multiple source files, bug fixes! Read on.
+##### If you've used cppimport version 0.0.*, some new features for you! Compiler arguments, multiple source files, bug fixes! Read on.
 
 # Import C or C++ files directly from Python!
 Let's try it out. First, if you're on Linux or OS X, install with the terminal command `pip install cppimport`.
