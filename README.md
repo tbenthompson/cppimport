@@ -66,6 +66,15 @@ Calling `cppimport.set_quiet(False)` will result in output that will be helpful 
 ### Sometimes I need to force a rebuild even when the checksum matches
 Call `cppimport.force_rebuild()` before running `cppimport.imp(...)`.
 
+### I want incremental compiles on extensions with multiple sources.
+
+(For the uninitiated, incremental compilation involves only recompiling those source files that have changed or include headers that have changed.)
+
+cppimport is built on top of the setuptools and distutils, the standard library for python packaging and distribution. Unfortunately, setuptools does not support incremental compilation. I recommend following the suggestions on [this SO answer](http://stackoverflow.com/questions/11013851/speeding-up-build-process-with-distutils). That is:
+
+1. Use ccache to (massively) reduce the cost of rebuilds
+2. Enable parallel compilation
+
 ### Windows?
 I don't know if `cppimport` works on Windows. If you're on Windows, try it out and I'll happily accept a pull request for any issues that you fix.
 
