@@ -105,7 +105,7 @@ def build_module(module_data):
     ]
 
     # Monkey patch in the parallel compiler if requested.
-    if cfg['parallel']:
+    if cfg.get('parallel', False):
         old_compile = distutils.ccompiler.CCompiler.compile
         distutils.ccompiler.CCompiler.compile = parallel_compile
 
@@ -150,7 +150,7 @@ def build_module(module_data):
         setuptools.setup(**setuptools_args)
 
     # Remove the parallel compiler to not corrupt the outside environment.
-    if cfg['parallel']:
+    if cfg.get('parallel', False):
         distutils.ccompiler.CCompiler.compile = old_compile
 
     shutil.rmtree(build_path)
