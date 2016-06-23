@@ -99,10 +99,7 @@ def build_module(module_data):
         module_data['cfg'].get('include_dirs', []) +
         [module_data['filedirname']]
     )
-    module_data['extra_source_filepaths'] = [
-        cppimport.find.find_file_in_folders(d, module_data['dependency_dirs'])
-        for d in cfg.get('sources', [])
-    ]
+    module_data['extra_source_filepaths'] = cfg.get('sources', [])
 
     # Monkey patch in the parallel compiler if requested.
     if cfg.get('parallel', False):
