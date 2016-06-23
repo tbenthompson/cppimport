@@ -42,10 +42,11 @@ def is_checksum_current(module_data):
 def checksum_save(module_data):
     checksum_filepath = get_checksum_filepath(module_data['filepath'])
 
-    dep_filepaths = [
-        cppimport.find.find_file_in_folders(d, module_data['dependency_dirs'])
-        for d in module_data['cfg'].get('dependencies', [])
-    ] + module_data['extra_source_filepaths'] + [module_data['filepath']]
+    dep_filepaths = (
+        module_data['cfg'].get('dependencies', []) +
+        module_data['extra_source_filepaths'] +
+        [module_data['filepath']]
+    )
 
     cur_checksum = calc_cur_checksum(dep_filepaths, module_data)
     pickle.dump((dep_filepaths, cur_checksum), open(checksum_filepath, 'wb'))
