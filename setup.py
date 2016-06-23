@@ -20,7 +20,7 @@ setup(
     },
 
     name = 'cppimport',
-    version = '16.06',
+    version = '16.06.23',
     description = 'Import C++ files directly from Python!',
     long_description = description,
     url = 'https://github.com/tbenthompson/cppimport',
