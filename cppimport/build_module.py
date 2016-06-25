@@ -101,11 +101,6 @@ def build_module(module_data):
     )
     module_data['extra_source_filepaths'] = cfg.get('sources', [])
 
-    # Monkey patch in the parallel compiler if requested.
-    if cfg.get('parallel', False):
-        old_compile = distutils.ccompiler.CCompiler.compile
-        distutils.ccompiler.CCompiler.compile = parallel_compile
-
     ext = ImportCppExt(
         os.path.dirname(filepath),
         full_module_name,
@@ -139,6 +134,13 @@ def build_module(module_data):
         }
     )
 
+    # Monkey patch in the parallel compiler if requested.
+    py32orgreater = sys.version_info[0] >= 3 and sys.version_info[1] >= 3
+    parallelize = cfg.get('parallel') and py33orgreater
+    if parallelize:
+        old_compile = distutils.ccompiler.CCompiler.compile
+        distutils.ccompiler.CCompiler.compile = parallel_compile
+
     if cppimport.config.quiet:
         with stdchannel_redirected("stdout"):
             with stdchannel_redirected("stderr"):
@@ -147,7 +149,7 @@ def build_module(module_data):
         setuptools.setup(**setuptools_args)
 
     # Remove the parallel compiler to not corrupt the outside environment.
-    if cfg.get('parallel', False):
+    if parallelize:
         distutils.ccompiler.CCompiler.compile = old_compile
 
     shutil.rmtree(build_path)
