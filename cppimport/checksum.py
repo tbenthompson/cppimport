@@ -5,6 +5,7 @@ import traceback
 
 import cppimport.find
 import cppimport.config
+from cppimport.filepaths import make_absolute
 
 # I use .${filename}.cppimporthash as the checksum file for each module.
 def get_checksum_filepath(filepath):
@@ -48,7 +49,10 @@ def checksum_save(module_data):
     checksum_filepath = get_checksum_filepath(module_data['filepath'])
 
     dep_filepaths = (
-        module_data['cfg'].get('dependencies', []) +
+        [
+            make_absolute(module_data['filedirname'], d)
+            for d in module_data['cfg'].get('dependencies', [])
+        ] +
         module_data['extra_source_filepaths'] +
         [module_data['filepath']]
     )

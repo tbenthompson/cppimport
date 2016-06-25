@@ -9,6 +9,7 @@ import distutils
 import setuptools
 import setuptools.command.build_ext
 import cppimport.config
+from cppimport.filepaths import make_absolute
 
 if sys.version_info[0] == 2:
     import StringIO as io
@@ -95,11 +96,21 @@ def build_module(module_data):
     filepath = module_data['filepath']
     cfg = module_data['cfg']
 
+    module_data['abs_include_dirs'] = [
+        make_absolute(module_data['filedirname'], d)
+        for d in cfg.get('include_dirs', [])
+    ] + [os.path.dirname(filepath)]
+    module_data['abs_library_dirs'] = [
+        make_absolute(module_data['filedirname'], d)
+        for d in cfg.get('library_dirs', [])
+    ]
     module_data['dependency_dirs'] = (
-        module_data['cfg'].get('include_dirs', []) +
-        [module_data['filedirname']]
+        module_data['abs_include_dirs'] + [module_data['filedirname']]
     )
-    module_data['extra_source_filepaths'] = cfg.get('sources', [])
+    module_data['extra_source_filepaths'] = [
+        make_absolute(module_data['filedirname'], s)
+        for s in cfg.get('sources', [])
+    ]
 
     ext = ImportCppExt(
         os.path.dirname(filepath),
@@ -109,10 +120,10 @@ def build_module(module_data):
             module_data['extra_source_filepaths'] +
             [module_data['rendered_src_filepath']]
         ),
-        include_dirs = cfg.get('include_dirs', []) + [os.path.dirname(filepath)],
+        include_dirs = module_data['abs_include_dirs'],
         extra_compile_args = cfg.get('compiler_args', []),
         extra_link_args = cfg.get('linker_args', []),
-        library_dirs = cfg.get('library_dirs', []),
+        library_dirs = module_data['abs_library_dirs'],
         libraries = cfg.get('libraries', [])
     )
 
