@@ -6,6 +6,8 @@ import cppimport.config
 import cppimport.checksum
 import cppimport.find
 
+quiet_print = cppimport.config.quiet_print
+
 def get_module_name(full_module_name):
     return full_module_name.split('.')[-1]
 
@@ -32,6 +34,15 @@ def should_rebuild(module_data):
             cppimport.config.should_force_rebuild or
             not cppimport.checksum.is_checksum_current(module_data))
 
+def template_and_build(filepath, module_data):
+    # Don't import until here to reduce startup time.
+    import cppimport.templating as templating
+    import cppimport.build_module as build_module
+    quiet_print("Compiling " + filepath)
+    templating.run_templating(module_data)
+    build_module.build_module(module_data)
+    cppimport.checksum.checksum_save(module_data)
+
 def imp(fullname):
     # Search through sys.path to find a file that matches the module
     filepath = cppimport.find.find_module_cpppath(fullname)
@@ -42,15 +53,15 @@ def imp(fullname):
         )
 
     module_data = setup_module_data(fullname, filepath)
-    quiet_print = cppimport.config.quiet_print
     if should_rebuild(module_data):
-        # Don't import until here to reduce startup time.
-        import cppimport.templating as templating
-        import cppimport.build_module as build_module
-        quiet_print("Compiling " + filepath)
-        templating.run_templating(module_data)
-        build_module.build_module(module_data)
-        cppimport.checksum.checksum_save(module_data)
+        template_and_build(filepath, module_data)
+        return __import__(fullname)
     else:
         quiet_print("Matching checksum for " + filepath + " --> not compiling")
-    return __import__(fullname)
+        try:
+            return __import__(fullname)
+        except ImportError as e:
+            quiet_print(
+                "ImportError during import with matching checksum. Trying to rebuild.")
+            template_and_build(filepath, module_data)
+            return __import__(fullname)

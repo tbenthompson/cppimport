@@ -135,7 +135,7 @@ def build_module(module_data):
     )
 
     # Monkey patch in the parallel compiler if requested.
-    py32orgreater = sys.version_info[0] >= 3 and sys.version_info[1] >= 3
+    py33orgreater = sys.version_info[0] >= 3 and sys.version_info[1] >= 3
     parallelize = cfg.get('parallel') and py33orgreater
     if parallelize:
         old_compile = distutils.ccompiler.CCompiler.compile
