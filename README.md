@@ -73,7 +73,7 @@ Call `cppimport.force_rebuild()` before running `cppimport.imp(...)`.
 cppimport is built on top of the setuptools and distutils, the standard library for python packaging and distribution. Unfortunately, setuptools does not support incremental compilation. I recommend following the suggestions on [this SO answer](http://stackoverflow.com/questions/11013851/speeding-up-build-process-with-distutils). That is:
 
 1. Use ccache to (massively) reduce the cost of rebuilds
-2. Enable parallel compilation
+2. Enable parallel compilation. This can be done with `cfg['parallel'] = True` in the C++ file's configuration header.
 
 ### Windows?
 I don't know if `cppimport` works on Windows. If you're on Windows, try it out and I'll happily accept a pull request for any issues that you fix.
