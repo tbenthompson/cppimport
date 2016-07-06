@@ -75,6 +75,15 @@ cppimport is built on top of the setuptools and distutils, the standard library 
 1. Use ccache to (massively) reduce the cost of rebuilds
 2. Enable parallel compilation. This can be done with `cfg['parallel'] = True` in the C++ file's configuration header.
 
+### I need information about filepaths in my module configuration code!
+The module name is available as the `fullname` variable and the C++ module file is available as `filepath`. 
+For example,
+```
+<%
+module_dir = os.path.dirname(filepath)
+%>
+```
+
 ### Windows?
 I don't know if `cppimport` works on Windows. If you're on Windows, try it out and I'll happily accept a pull request for any issues that you fix.
 
