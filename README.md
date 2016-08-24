@@ -55,6 +55,13 @@ cfg['libraries'] = ['...']
 cfg['include_dirs'] = ['...']
 ```
 
+For example, to use C++11, add:
+```
+<%
+cfg['compiler_args'] = ['-std=c++11']
+%>
+```
+
 ### I want multiple source files for one extension!
 ```
 cfg['sources'] = ['...']
