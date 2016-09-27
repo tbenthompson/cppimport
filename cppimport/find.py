@@ -42,7 +42,7 @@ def find_module_cpppath(modulename):
     return None
 
 
-def find_module_path(module_name: str, search_path: str = None) -> str:
+def find_module_path(module_name, search_path=None):
     """
     Find the module path (pyd / so), while accounting for platform/arch naming
     :param module_name: The name of the module
