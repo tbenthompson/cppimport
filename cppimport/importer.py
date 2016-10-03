@@ -30,7 +30,9 @@ def setup_module_data(fullname, filepath):
     return module_data
 
 def should_rebuild(module_data):
-    return (not os.path.exists(module_data['ext_path']) or
+    module_path = cppimport.find.find_module_path(module_data['fullname'], module_data['filedirname'])
+    return (not module_path or
+            not os.path.exists(module_path) or
             cppimport.config.should_force_rebuild or
             not cppimport.checksum.is_checksum_current(module_data))
 
