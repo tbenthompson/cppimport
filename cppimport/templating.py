@@ -13,8 +13,8 @@ def setup_pybind11(cfg):
         [pybind11.get_include(), pybind11.get_include(True)]
     )
     cfg['compiler_args'] = (
-        cfg.get('compiler_args', []) +
-        ['-std=c++11']
+        ['-std=c++11'] +
+        cfg.get('compiler_args', [])
     )
 
 def run_templating(module_data):
