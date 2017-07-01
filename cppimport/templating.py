@@ -29,6 +29,17 @@ def run_templating(module_data):
         import io
 
     module_data['cfg'] = dict()
+    module_data['cfg']['compiler_args'] = []
+    module_data['cfg']['sources'] = []
+    module_data['cfg']['include_dirs'] = []
+
+    module_data['cfg']['library_dirs'] = []
+    module_data['cfg']['libraries'] = []
+    module_data['cfg']['linker_args'] = []
+
+    module_data['cfg']['dependencies'] = []
+    module_data['cfg']['parallel'] = False
+
     module_data['setup_pybind11'] = setup_pybind11
     buf = io.StringIO()
     ctx = mako.runtime.Context(buf, **module_data)
