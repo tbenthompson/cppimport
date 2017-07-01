@@ -45,15 +45,9 @@ def template_and_build(filepath, module_data):
     build_module.build_module(module_data)
     cppimport.checksum.checksum_save(module_data)
 
-def imp(fullname):
-    # Search through sys.path to find a file that matches the module
-    filepath = cppimport.find.find_module_cpppath(fullname)
-
-    if filepath is None or not os.path.exists(filepath):
-        raise ImportError(
-            "Couldn't find a file matching the module name " + str(fullname)
-        )
-
+def imp_from_filepath(filepath, fullname = None):
+    if fullname is None:
+        fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
     if should_rebuild(module_data):
         template_and_build(filepath, module_data)
@@ -67,3 +61,12 @@ def imp(fullname):
                 "ImportError during import with matching checksum. Trying to rebuild.")
             template_and_build(filepath, module_data)
             return __import__(fullname)
+
+def imp(fullname):
+    # Search through sys.path to find a file that matches the module
+    filepath = cppimport.find.find_module_cpppath(fullname)
+    if filepath is None or not os.path.exists(filepath):
+        raise ImportError(
+            "Couldn't find a file matching the module name " + str(fullname)
+        )
+    return imp_from_filepath(filepath, fullname)
