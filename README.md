@@ -5,9 +5,11 @@ Let's try it out. First, if you're on Linux or OS X, install with the terminal c
 
 Here's a simple C++ extension using [pybind11](https://github.com/pybind/pybind11):
 ```c++
+/*
 <%
 setup_pybind11(cfg)
 %>
+*/
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
@@ -40,6 +42,8 @@ I'm a big fan of the workflow that this enables, where you can edit both C++ fil
 **The technical description:** cppimport looks for a C or C++ source file that matches the requested module. If such a file exists, the file is first run through the Mako templating system. The compilation options produced by the Mako pass are then use to compile the file as a Python extension. The extension (shared library) that is produced is placed in the same folder as the C++ source file. Then, the extension is loaded.
 
 **Simpler language please:** Sometimes Python just isn't fast enough. Or you have existing code in a C++ library. So, you write a Python *extension module*, a library of compiled code. I recommend [pybind11](https://github.com/pybind/pybind11) for C++ to Python bindings or [cffi](https://cffi.readthedocs.io/en/latest/) for C to Python bindings. I've done this a lot over the years. But, I discovered that my productivity goes through the floor when my development process goes from *Edit -> Test* in just Python to *Edit -> Compile -> Test* in Python plus C++. So, `cppimport` combines the process of compiling and importing an extension in Python so that you can type `modulename = cppimport.imp("modulename")` and not have to worry about multiple steps. Internally, `cppimport` looks for a file `modulename.cpp`. If one is found, it's run through the Mako templating system to gather compiler options, then it's compiled and loaded as an extension module.
+
+Note that because of the Mako pre-processing, the comments around the configuration block may be omitted.
 
 ### Recompilation only happens when necessary:
 Compilation should only happen the first time the module is imported. The C++ source is compared with a checksum on each import to determine if the file has changed. Additional dependencies (header files!) can be tracked by adding to the Mako header:
@@ -83,7 +87,7 @@ cppimport is built on top of the setuptools and distutils, the standard library 
 2. Enable parallel compilation. This can be done with `cfg['parallel'] = True` in the C++ file's configuration header.
 
 ### I need information about filepaths in my module configuration code!
-The module name is available as the `fullname` variable and the C++ module file is available as `filepath`. 
+The module name is available as the `fullname` variable and the C++ module file is available as `filepath`.
 For example,
 ```
 <%
