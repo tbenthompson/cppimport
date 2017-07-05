@@ -70,3 +70,11 @@ def imp(fullname):
             "Couldn't find a file matching the module name " + str(fullname)
         )
     return imp_from_filepath(filepath, fullname)
+
+def cppimport_impl(fullname):
+    # Search through sys.path to find a file that matches the module
+    out_module = imp(fullname)
+    sub_module_names = fullname.split('.')[1:]
+    for sub_name in sub_module_names:
+        out_module = getattr(out_module, sub_name)
+    return out_module
