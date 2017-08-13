@@ -1,6 +1,7 @@
 import os
 import sys
 import sysconfig
+import importlib
 
 import cppimport.config
 import cppimport.checksum
@@ -51,16 +52,16 @@ def imp_from_filepath(filepath, fullname = None):
     module_data = setup_module_data(fullname, filepath)
     if should_rebuild(module_data):
         template_and_build(filepath, module_data)
-        return __import__(fullname)
+        return importlib.import_module(fullname)
     else:
         quiet_print("Matching checksum for " + filepath + " --> not compiling")
         try:
-            return __import__(fullname)
+            return importlib.import_module(fullname)
         except ImportError as e:
             quiet_print(
                 "ImportError during import with matching checksum. Trying to rebuild.")
             template_and_build(filepath, module_data)
-            return __import__(fullname)
+            return importlib.import_module(fullname)
 
 def imp(fullname):
     # Search through sys.path to find a file that matches the module
@@ -71,10 +72,3 @@ def imp(fullname):
         )
     return imp_from_filepath(filepath, fullname)
 
-def cppimport_impl(fullname):
-    # Search through sys.path to find a file that matches the module
-    out_module = imp(fullname)
-    sub_module_names = fullname.split('.')[1:]
-    for sub_name in sub_module_names:
-        out_module = getattr(out_module, sub_name)
-    return out_module
