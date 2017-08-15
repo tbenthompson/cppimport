@@ -60,12 +60,12 @@ def test_mymodule():
     module_tester(mymodule)
 
 def test_package_mymodule():
-    apackage = cppimport.imp("apackage.mymodule")
-    module_tester(apackage.mymodule)
+    mymodule = cppimport.imp("apackage.mymodule")
+    module_tester(mymodule)
 
 def test_inner_package_mymodule():
-    apackage = cppimport.imp("apackage.inner.mymodule")
-    module_tester(apackage.inner.mymodule)
+    mymodule = cppimport.imp("apackage.inner.mymodule")
+    module_tester(mymodule)
 
 def test_with_file_in_syspath():
     orig_sys_path = copy.copy(sys.path)
