@@ -18,6 +18,7 @@ PYBIND11_PLUGIN(mymodule) {
     pybind11::module m("mymodule", "auto-compiled c++ extension");
     m.def("add", &add);
 #ifdef THING_DEFINED
+    #pragma message "stuff"
     py::class_<Thing>(m, "Thing")
         .def(py::init<>())
         .def("cheer", &Thing::cheer);

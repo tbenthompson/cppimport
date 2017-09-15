@@ -30,12 +30,22 @@ def setup_module_data(fullname, filepath):
     )
     return module_data
 
-def should_rebuild(module_data):
-    module_path = cppimport.find.find_module_path(module_data['fullname'], module_data['filedirname'])
-    return (not module_path or
-            not os.path.exists(module_path) or
-            cppimport.config.should_force_rebuild or
-            not cppimport.checksum.is_checksum_current(module_data))
+def load_module(module_data):
+    module_data['module'] = importlib.import_module(module_data['fullname'])
+
+def checksum_and_try_load(module_data):
+    if cppimport.config.should_force_rebuild:
+        return False
+    if not cppimport.checksum.is_checksum_current(module_data):
+        return False
+    quiet_print("Matching checksum for " + module_data['filepath'] + " --> not compiling")
+    try:
+        load_module(module_data)
+        return True
+    except ImportError:
+        quiet_print(
+            "ImportError during import with matching checksum. Trying to rebuild.")
+        return False
 
 def template_and_build(filepath, module_data):
     # Don't import until here to reduce startup time.
@@ -46,22 +56,40 @@ def template_and_build(filepath, module_data):
     build_module.build_module(module_data)
     cppimport.checksum.checksum_save(module_data)
 
+def reload_if_loaded(module_data):
+    if module_data['module'] is None:
+        return importlib.import_module(module_data['fullname'])
+    else:
+        try:
+            reload
+        except NameError:
+            from imp import reload
+        print("RELOADING")
+        print("RELOADING")
+        print("RELOADING")
+        print("RELOADING")
+        return reload(module_data['module'])
+
 def imp_from_filepath(filepath, fullname = None):
     if fullname is None:
         fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
-    if should_rebuild(module_data):
+    if not checksum_and_try_load(module_data):
         template_and_build(filepath, module_data)
-        return importlib.import_module(fullname)
-    else:
-        quiet_print("Matching checksum for " + filepath + " --> not compiling")
-        try:
-            return importlib.import_module(fullname)
-        except ImportError as e:
-            quiet_print(
-                "ImportError during import with matching checksum. Trying to rebuild.")
-            template_and_build(filepath, module_data)
-            return importlib.import_module(fullname)
+        load_module(module_data)
+    return module_data['module']
+
+    # return module_data['module']
+    #     return reload_if_loaded(module_data)
+    # else:
+    #     quiet_print("Matching checksum for " + filepath + " --> not compiling")
+    #     try:
+    #         return reload_if_loaded(module_data)
+    #     except ImportError as e:
+    #         quiet_print(
+    #             "ImportError during import with matching checksum. Trying to rebuild.")
+    #         template_and_build(filepath, module_data)
+    #         return reload_if_loaded(module_data)
 
 def imp(fullname):
     # Search through sys.path to find a file that matches the module

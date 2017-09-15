@@ -40,31 +40,3 @@ def find_module_cpppath(modulename):
             return outfilename
 
     return None
-
-
-def find_module_path(module_name, search_path=None):
-    """
-    Find the module path (pyd / so), while accounting for platform/arch naming
-    :param module_name: The name of the module
-    :param search_path: The path to search in. If None, searches system path.
-    :return: The full path to the library or None if not found.
-    """
-
-    # Use importlib if python 3.4+, else imp
-    if sys.version_info[0] > 3 or (sys.version_info[0] == 3 and sys.version_info[1] >= 4):
-
-        from importlib.machinery import FileFinder, ExtensionFileLoader, EXTENSION_SUFFIXES
-        file_finder = FileFinder(search_path, (ExtensionFileLoader, EXTENSION_SUFFIXES))
-
-        # The search caches must be cleared to guaranteed find dynamically created modules
-        file_finder.invalidate_caches()
-        result = file_finder.find_spec(module_name)
-        return None if not result else result.origin
-    else:
-        from imp import find_module  # Deprecated in 3.4
-        try:
-            result = find_module(module_name, [search_path])
-        except ImportError:
-            result = None
-
-        return None if not result else result[1]
