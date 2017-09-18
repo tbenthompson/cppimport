@@ -56,20 +56,6 @@ def template_and_build(filepath, module_data):
     build_module.build_module(module_data)
     cppimport.checksum.checksum_save(module_data)
 
-def reload_if_loaded(module_data):
-    if module_data['module'] is None:
-        return importlib.import_module(module_data['fullname'])
-    else:
-        try:
-            reload
-        except NameError:
-            from imp import reload
-        print("RELOADING")
-        print("RELOADING")
-        print("RELOADING")
-        print("RELOADING")
-        return reload(module_data['module'])
-
 def imp_from_filepath(filepath, fullname = None):
     if fullname is None:
         fullname = os.path.splitext(os.path.basename(filepath))[0]
@@ -78,18 +64,6 @@ def imp_from_filepath(filepath, fullname = None):
         template_and_build(filepath, module_data)
         load_module(module_data)
     return module_data['module']
-
-    # return module_data['module']
-    #     return reload_if_loaded(module_data)
-    # else:
-    #     quiet_print("Matching checksum for " + filepath + " --> not compiling")
-    #     try:
-    #         return reload_if_loaded(module_data)
-    #     except ImportError as e:
-    #         quiet_print(
-    #             "ImportError during import with matching checksum. Trying to rebuild.")
-    #         template_and_build(filepath, module_data)
-    #         return reload_if_loaded(module_data)
 
 def imp(fullname):
     # Search through sys.path to find a file that matches the module
