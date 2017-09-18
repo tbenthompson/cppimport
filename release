@@ -1,0 +1,16 @@
+update the version number in setup.py with yy.mm.dd
+python setup.py sdist upload -r pypi
+
+TEST: 
+open new terminal
+mkvirtualenv adf
+pip install cppimport
+cd ~/projects/cppimport/tests
+python -c "import cppimport; assert(cppimport.imp("mymodule").add(1,2) == 3);"
+
+GIT:
+git commit -m "yy.mm.dd" 
+git push
+git tag yy.mm.dd
+git push origin yy.mm.dd
+
