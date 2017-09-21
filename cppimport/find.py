@@ -32,6 +32,9 @@ def find_module_cpppath(modulename):
     moduledir = os.path.dirname(modulepath_without_ext + '.throwaway')
     matching_dirs = find_matching_path_dirs(moduledir)
     matching_dirs = [os.getcwd() if d == '' else d for d in matching_dirs]
+    matching_dirs = [
+        d if os.path.isabs(d) else os.path.join(os.getcwd(), d) for d in matching_dirs
+    ]
 
     for ext in cppimport.config.file_exts:
         modulefilename = os.path.basename(modulepath_without_ext + ext)
