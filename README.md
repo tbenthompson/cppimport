@@ -96,6 +96,6 @@ module_dir = os.path.dirname(filepath)
 ```
 
 ### Windows?
-I don't know if `cppimport` works on Windows. If you're on Windows, try it out and I'll happily accept a pull request for any issues that you fix.
+I don't know if `cppimport` works on Windows. If you're on Windows, try it out and I'll happily accept a pull request for any issues that you fix. I have reports that `cppimport` works on Windows with Python 3.6 and Visual C++ 2015 Build Tools.
 
 # cppimport uses the MIT License
