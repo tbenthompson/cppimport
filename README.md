@@ -3,7 +3,8 @@
 # Import C or C++ files directly from Python!
 Let's try it out. First, if you're on Linux or OS X, install with the terminal command `pip install cppimport`.
 
-Here's a simple C++ extension using [pybind11](https://github.com/pybind/pybind11):
+Most cppimport users combine it with [pybind11](https://github.com/pybind/pybind11), but you can use a range of methods to create your Python extensions. Raw C extensions, Boost.Python, SWIG all work. Let's look at a simple C++ extension:
+
 ```c++
 /*
 <%
