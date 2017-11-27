@@ -25,12 +25,14 @@ def run_templating(module_data):
 
     module_data['cfg'] = dict()
     module_data['cfg']['compiler_args'] = []
+    module_data['cfg']['extra_compile_args'] = []
     module_data['cfg']['sources'] = []
     module_data['cfg']['include_dirs'] = []
 
     module_data['cfg']['library_dirs'] = []
     module_data['cfg']['libraries'] = []
     module_data['cfg']['linker_args'] = []
+    module_data['cfg']['extra_link_args'] = []
 
     module_data['cfg']['dependencies'] = []
     module_data['cfg']['parallel'] = False
