@@ -52,8 +52,11 @@ def template_and_build(filepath, module_data):
     import cppimport.templating as templating
     import cppimport.build_module as build_module
     quiet_print("Compiling " + filepath)
+    print('templating: ' + str(module_data['filepath']))
     templating.run_templating(module_data)
+    print('building: ' + str(module_data['filepath']))
     build_module.build_module(module_data)
+    print('checksumming: ' + str(module_data['filepath']))
     cppimport.checksum.checksum_save(module_data)
 
 def imp_from_filepath(filepath, fullname = None):
@@ -65,12 +68,14 @@ def imp_from_filepath(filepath, fullname = None):
         load_module(module_data)
     return module_data['module']
 
-def imp(fullname):
+def imp(fullname, opt_in = False):
     # Search through sys.path to find a file that matches the module
-    filepath = cppimport.find.find_module_cpppath(fullname)
+    filepath = cppimport.find.find_module_cpppath(fullname, opt_in)
     if filepath is None or not os.path.exists(filepath):
         raise ImportError(
-            "Couldn't find a file matching the module name " + str(fullname)
+            'Couldn\'t find a file matching the module name: ' +
+            str(fullname) +
+            '  (note: opt_in = ' + str(opt_in) + ')'
         )
     return imp_from_filepath(filepath, fullname)
 

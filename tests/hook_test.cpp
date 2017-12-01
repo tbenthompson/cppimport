@@ -1,3 +1,4 @@
+/*cppimport*/
 <%
 setup_pybind11(cfg)
 %>

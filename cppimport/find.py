@@ -3,7 +3,11 @@ import sys
 
 import cppimport.config
 
-def find_file_in_folders(filename, paths):
+def check_contains_cppimport(filepath):
+    with open(filepath, 'r') as f:
+        return 'cppimport' in f.readline()
+
+def find_file_in_folders(filename, paths, opt_in):
     for d in paths:
         if not os.path.exists(d):
             continue
@@ -12,8 +16,12 @@ def find_file_in_folders(filename, paths):
             continue
 
         for f in os.listdir(d):
-            if f == filename:
-                return os.path.join(d, f)
+            if f != filename:
+                continue
+            filepath = os.path.join(d, f)
+            if opt_in and not check_contains_cppimport(filepath):
+                continue
+            return filepath
     return None
 
 def find_matching_path_dirs(moduledir):
@@ -27,7 +35,7 @@ def find_matching_path_dirs(moduledir):
             ds.append(test_path)
     return ds
 
-def find_module_cpppath(modulename):
+def find_module_cpppath(modulename, opt_in = False):
     modulepath_without_ext = modulename.replace('.', os.sep)
     moduledir = os.path.dirname(modulepath_without_ext + '.throwaway')
     matching_dirs = find_matching_path_dirs(moduledir)
@@ -38,7 +46,7 @@ def find_module_cpppath(modulename):
 
     for ext in cppimport.config.file_exts:
         modulefilename = os.path.basename(modulepath_without_ext + ext)
-        outfilename = find_file_in_folders(modulefilename, matching_dirs)
+        outfilename = find_file_in_folders(modulefilename, matching_dirs, opt_in)
         if outfilename is not None:
             return outfilename
 

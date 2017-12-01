@@ -13,7 +13,7 @@ class Hook(object):
 
         try:
             self._running = True
-            cppimport.importer.imp(fullname)
+            cppimport.importer.imp(fullname, opt_in = True)
         except ImportError as e:
             # ImportError should be quashed because that simply means cppimport
             # didn't find anything, and probably shouldn't have found anything!

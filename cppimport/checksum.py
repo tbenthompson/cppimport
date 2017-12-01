@@ -29,7 +29,8 @@ def is_checksum_current(module_data):
             return False
 
         try:
-            deps, old_checksum = pickle.load(open(checksum_filepath, 'rb'))
+            with open(checksum_filepath, 'rb') as f:
+                deps, old_checksum = pickle.load(f)
         except (ValueError, pickle.UnpicklingError) as e:
             cppimport.config.quiet_print(
                 "Failed to load checksum due to exception" + traceback.format_exc()

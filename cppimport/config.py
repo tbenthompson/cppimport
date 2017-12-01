@@ -6,9 +6,9 @@ def set_quiet(to):
     global quiet
     quiet = to
 
-def force_rebuild():
+def force_rebuild(to = True):
     global should_force_rebuild
-    should_force_rebuild = True
+    should_force_rebuild = to
 
 def quiet_print(a):
     global quiet

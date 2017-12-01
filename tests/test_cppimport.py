@@ -127,4 +127,8 @@ def test_cpprun():
     assert(b'HI!\n' == p.stdout.read())
 
 def test_import_hook():
+    # Force rebuild to make sure we're not just reloading the already compiled
+    # module from disk
+    cppimport.force_rebuild(True)
     import hook_test
+    cppimport.force_rebuild(False)
