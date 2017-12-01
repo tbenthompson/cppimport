@@ -52,11 +52,8 @@ def template_and_build(filepath, module_data):
     import cppimport.templating as templating
     import cppimport.build_module as build_module
     quiet_print("Compiling " + filepath)
-    print('templating: ' + str(module_data['filepath']))
     templating.run_templating(module_data)
-    print('building: ' + str(module_data['filepath']))
     build_module.build_module(module_data)
-    print('checksumming: ' + str(module_data['filepath']))
     cppimport.checksum.checksum_save(module_data)
 
 def imp_from_filepath(filepath, fullname = None):
