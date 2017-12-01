@@ -8,6 +8,7 @@ import contextlib
 import cppimport
 import cppimport.build_module
 import cppimport.templating
+import cppimport.import_hook
 cppimport.set_quiet(False)
 
 @contextlib.contextmanager
@@ -124,3 +125,6 @@ def test_cpprun():
     ], cwd = os.path.dirname(__file__), stdout = subprocess.PIPE)
     p.wait()
     assert(b'HI!\n' == p.stdout.read())
+
+def test_import_hook():
+    import hook_test
