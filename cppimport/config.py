@@ -3,7 +3,7 @@ import ctypes
 quiet = True
 should_force_rebuild = False
 file_exts = ['.cpp', '.c']
-rtld_flags = ctypes.RTLD_GLOBAL
+rtld_flags = ctypes.RTLD_LOCAL
 
 def set_quiet(to):
     global quiet
