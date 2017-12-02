@@ -1,6 +1,9 @@
+import ctypes
+
 quiet = True
 should_force_rebuild = False
 file_exts = ['.cpp', '.c']
+rtld_flags = ctypes.RTLD_GLOBAL
 
 def set_quiet(to):
     global quiet
@@ -21,3 +24,7 @@ def turn_off_strict_prototypes():
     for key, value in cfg_vars.items():
         if type(value) == str:
             cfg_vars[key] = value.replace("-Wstrict-prototypes", "")
+
+def set_rtld_flags(flags):
+    global rtld_flags
+    rtld_flags = flags

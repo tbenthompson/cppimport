@@ -31,7 +31,11 @@ def setup_module_data(fullname, filepath):
     return module_data
 
 def load_module(module_data):
+    old_flags = sys.getdlopenflags()
+    new_flags = old_flags | cppimport.config.rtld_flags
+    sys.setdlopenflags(new_flags)
     module_data['module'] = importlib.import_module(module_data['fullname'])
+    sys.setdlopenflags(old_flags)
 
 def checksum_and_try_load(module_data):
     if cppimport.config.should_force_rebuild:
