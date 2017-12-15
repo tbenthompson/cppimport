@@ -37,12 +37,14 @@ def load_module(module_data):
     module_data['module'] = importlib.import_module(module_data['fullname'])
     sys.setdlopenflags(old_flags)
 
-def checksum_and_try_load(module_data):
+def checksum_and_try_load(module_data, try_load=True):
     if cppimport.config.should_force_rebuild:
         return False
     if not cppimport.checksum.is_checksum_current(module_data):
         return False
     quiet_print("Matching checksum for " + module_data['filepath'] + " --> not compiling")
+    if not try_load:
+        return True
     try:
         load_module(module_data)
         return True
@@ -80,3 +82,17 @@ def imp(fullname, opt_in = False):
         )
     return imp_from_filepath(filepath, fullname)
 
+def build(fullname):
+    # Search through sys.path to find a file that matches the module
+    filepath = cppimport.find.find_module_cpppath(fullname)
+    if filepath is None or not os.path.exists(filepath):
+        raise ImportError(
+            "Couldn't find a file matching the module name " + str(fullname)
+        )
+    if fullname is None:
+        fullname = os.path.splitext(os.path.basename(filepath))[0]
+    module_data = setup_module_data(fullname, filepath)
+    if not checksum_and_try_load(module_data,try_load=False):
+        template_and_build(filepath, module_data)
+    # Return the path to the built module
+    return module_data['ext_path']
