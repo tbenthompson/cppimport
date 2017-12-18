@@ -35,7 +35,7 @@ def find_matching_path_dirs(moduledir):
             ds.append(test_path)
     return ds
 
-def find_module_cpppath(modulename, opt_in = False):
+def _find_module_cpppath(modulename, opt_in = False):
     modulepath_without_ext = modulename.replace('.', os.sep)
     moduledir = os.path.dirname(modulepath_without_ext + '.throwaway')
     matching_dirs = find_matching_path_dirs(moduledir)
@@ -51,3 +51,13 @@ def find_module_cpppath(modulename, opt_in = False):
             return outfilename
 
     return None
+
+def find_module_cpppath(modulename, opt_in = False):
+    filepath = _find_module_cpppath(modulename, opt_in)
+    if filepath is None:
+        raise ImportError(
+            'Couldn\'t find a file matching the module name: ' +
+            str(modulename) +
+            '  (note: opt_in = ' + str(opt_in) + ')'
+        )
+    return filepath
