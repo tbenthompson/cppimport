@@ -40,7 +40,7 @@ I'm a big fan of the workflow that this enables, where you can edit both C++ fil
 
 # I want things to be even easier! (Python import hook)
 
-Modify the first section of the .cpp file and add "cppimport" on the first line of the file (this MUST be on the first line). 
+Modify the first section of the .cpp file and add "cppimport" on the first line of the file. This MUST be on the first line. This is explained further down.
 
 ```c++
 /*cppimport
