@@ -6,7 +6,7 @@ Let's try it out. First, if you're on Linux or OS X, install with the terminal c
 Most cppimport users combine it with [pybind11](https://github.com/pybind/pybind11), but you can use a range of methods to create your Python extensions. Raw C extensions, Boost.Python, SWIG all work. Let's look at a simple C++ extension:
 
 ```c++
-/*
+/*cppimport
 <%
 setup_pybind11(cfg)
 %>
@@ -37,6 +37,26 @@ Open a python interpreter and run these lines [\[1\]](#notes):
 ```
 
 I'm a big fan of the workflow that this enables, where you can edit both C++ files and Python and recompilation happens transparently.
+
+# I want things to be even easier! (Python import hook)
+
+Modify the first section of the .cpp file and add "cppimport" on the first line of the file (this MUST be on the first line). 
+
+```c++
+/*cppimport
+<%
+setup_pybind11(cfg)
+%>
+*/
+```
+
+Then import the file using the import hook:
+```python
+>>> import cppimport.import_hook
+>>> import somecode #This will pause for a moment to compile the module
+>>> somecode.square(9)
+81
+```
 
 # What's actually going on?
 
@@ -95,6 +115,9 @@ For example,
 module_dir = os.path.dirname(filepath)
 %>
 ```
+
+### Why does the import hook need "cppimport" on the first line of the .cpp file?
+Modifying the Python import system is a global modification and thus affects all imports from any other package. As a result, to avoid accidentally breaking another package, the import hook uses an "opt in" system where C and C++ files can specify they are meant to be used with cppimport by having a comment including the phrase "cppimport" on the first line of the file. 
 
 ### Windows?
 I don't know if `cppimport` works on Windows. If you're on Windows, try it out and I'll happily accept a pull request for any issues that you fix. I have reports that `cppimport` works on Windows with Python 3.6 and Visual C++ 2015 Build Tools.

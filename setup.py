@@ -5,7 +5,7 @@ try:
    description = pypandoc.convert('README.md', 'rst')
 except (IOError, ImportError):
    description = open('README.md').read()
-
+print(description)
 setup(
     packages = ['cppimport'],
 
