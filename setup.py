@@ -20,7 +20,7 @@ setup(
     },
 
     name = 'cppimport',
-    version = '18.01.09',
+    version = '18.01.10',
     description = 'Import C++ files directly from Python!',
     long_description = description,
 
