@@ -10,8 +10,6 @@ int square_sum(int x, int y) {
     return square(x) + square(y);
 }
 
-PYBIND11_PLUGIN(extra_sources) {
-    pybind11::module m("extra_sources", "");
+PYBIND11_MODULE(extra_sources, m) {
     m.def("square_sum", &square_sum);
-    return m.ptr();
 }

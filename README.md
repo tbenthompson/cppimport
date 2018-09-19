@@ -19,10 +19,9 @@ int square(int x) {
     return x * x;
 }
 
-PYBIND11_PLUGIN(somecode) {
-    pybind11::module m("somecode", "auto-compiled c++ extension");
+
+PYBIND11_MODULE(somecode, m) {
     m.def("square", &square);
-    return m.ptr();
 }
 ```
 
