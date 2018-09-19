@@ -6,7 +6,7 @@ Let's try it out. First, if you're on Linux or OS X, install with the terminal c
 Most cppimport users combine it with [pybind11](https://github.com/pybind/pybind11), but you can use a range of methods to create your Python extensions. Raw C extensions, Boost.Python, SWIG all work. Let's look at a simple C++ extension:
 
 ```c++
-/*cppimport
+/*
 <%
 setup_pybind11(cfg)
 %>
@@ -119,6 +119,6 @@ module_dir = os.path.dirname(filepath)
 Modifying the Python import system is a global modification and thus affects all imports from any other package. As a result, to avoid accidentally breaking another package, the import hook uses an "opt in" system where C and C++ files can specify they are meant to be used with cppimport by having a comment including the phrase "cppimport" on the first line of the file. 
 
 ### Windows?
-I don't know if `cppimport` works on Windows. If you're on Windows, try it out and I'll happily accept a pull request for any issues that you fix. I have reports that `cppimport` works on Windows with Python 3.6 and Visual C++ 2015 Build Tools.
+I've used `cppimport` with MinGW-w64 and Python 3.6 and had good success. I've also had reports that `cppimport` works on Windows with Python 3.6 and Visual C++ 2015 Build Tools. The main challenge is making sure that distutils is aware of your available compilers. Try out the suggestion [here](https://stackoverflow.com/questions/3297254/how-to-use-mingws-gcc-compiler-when-installing-python-package-using-pip).
 
 # cppimport uses the MIT License
