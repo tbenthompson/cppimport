@@ -13,14 +13,9 @@ setup(
         'mako', 'pybind11'
     ],
     zip_safe = False,
-    entry_points = {
-        'console_scripts': [
-            'cpprun=cppimport.cpprun:cpp_run'
-        ]
-    },
 
     name = 'cppimport',
-    version = '18.01.10',
+    version = '18.11.08',
     description = 'Import C++ files directly from Python!',
     long_description = description,
 
