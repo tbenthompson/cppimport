@@ -6,6 +6,18 @@ def get_rendered_source_filepath(filepath):
     filename = os.path.basename(filepath)
     return os.path.join(dirname, '.rendered.' + filename)
 
+class config(dict):
+    _key_mapping = {
+        'compiler_args': 'extra_compile_args',
+        'linker_args': 'extra_link_args',
+    }
+
+    def __getitem__(self, key):
+        return super(config, self).__getitem__(self._key_mapping.get(key, key))
+
+    def __setitem__(self, key, value):
+        super(config, self).__setitem__(self._key_mapping.get(key, key), value)
+
 def setup_pybind11(cfg):
     import pybind11
     cfg['include_dirs'] += [pybind11.get_include(), pybind11.get_include(True)]
@@ -23,20 +35,16 @@ def run_templating(module_data):
     else:
         import io
 
-    module_data['cfg'] = dict()
-    module_data['cfg']['compiler_args'] = []
-    module_data['cfg']['extra_compile_args'] = []
-    module_data['cfg']['sources'] = []
-    module_data['cfg']['include_dirs'] = []
-
-    module_data['cfg']['library_dirs'] = []
-    module_data['cfg']['libraries'] = []
-    module_data['cfg']['linker_args'] = []
-    module_data['cfg']['extra_link_args'] = []
-
-    module_data['cfg']['dependencies'] = []
-    module_data['cfg']['parallel'] = False
-
+    module_data['cfg'] = config(
+        sources = [],
+        include_dirs = [],
+        extra_compile_args = [],
+        libraries = [],
+        library_dirs = [],
+        extra_link_args = [],
+        dependencies = [],
+        parallel = False,
+    )
     module_data['setup_pybind11'] = setup_pybind11
     buf = io.StringIO()
     ctx = mako.runtime.Context(buf, **module_data)
