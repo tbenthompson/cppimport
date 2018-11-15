@@ -6,17 +6,17 @@ def get_rendered_source_filepath(filepath):
     filename = os.path.basename(filepath)
     return os.path.join(dirname, '.rendered.' + filename)
 
-class config(dict):
+class BuildArgs(dict):
     _key_mapping = {
         'compiler_args': 'extra_compile_args',
         'linker_args': 'extra_link_args',
     }
 
     def __getitem__(self, key):
-        return super(config, self).__getitem__(self._key_mapping.get(key, key))
+        return super(BuildArgs, self).__getitem__(self._key_mapping.get(key, key))
 
     def __setitem__(self, key, value):
-        super(config, self).__setitem__(self._key_mapping.get(key, key), value)
+        super(BuildArgs, self).__setitem__(self._key_mapping.get(key, key), value)
 
 def setup_pybind11(cfg):
     import pybind11
@@ -35,7 +35,7 @@ def run_templating(module_data):
     else:
         import io
 
-    module_data['cfg'] = config(
+    module_data['cfg'] = BuildArgs(
         sources = [],
         include_dirs = [],
         extra_compile_args = [],
