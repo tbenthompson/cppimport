@@ -121,8 +121,8 @@ def build_module(module_data):
             [module_data['rendered_src_filepath']]
         ),
         include_dirs = module_data['abs_include_dirs'],
-        extra_compile_args = cfg.get('extra_compile_args', []) + cfg.get('compiler_args', []),
-        extra_link_args = cfg.get('extra_link_args', []) + cfg.get('linker_args', []),
+        extra_compile_args = cfg.get('extra_compile_args', []),
+        extra_link_args = cfg.get('extra_link_args', []),
         library_dirs = module_data['abs_library_dirs'],
         libraries = cfg.get('libraries', [])
     )
