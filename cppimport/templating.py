@@ -22,7 +22,7 @@ def setup_pybind11(cfg):
     import pybind11
     cfg['include_dirs'] += [pybind11.get_include(), pybind11.get_include(True)]
     # Prefix with c++11 arg instead of suffix so that if a user specifies c++14 (or later!) then it won't be overridden.
-    cfg['compiler_args'] = ['-std=c++11'] + cfg['compiler_args']
+    cfg['compiler_args'] = ['-std=c++11', '-fvisibility=default'] + cfg['compiler_args']
 
 def run_templating(module_data):
     import mako.template
