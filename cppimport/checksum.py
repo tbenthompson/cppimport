@@ -18,7 +18,7 @@ def calc_cur_checksum(file_lst, module_data):
     text = b""
     for filepath in file_lst:
     	with open(filepath, 'rb') as f:
-        	text += f.read()
+            text += f.read()
     return hashlib.md5(text).hexdigest()
 
 # Use a checksum to see if the file has been changed since the last compilation
