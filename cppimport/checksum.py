@@ -60,4 +60,5 @@ def checksum_save(module_data):
     )
 
     cur_checksum = calc_cur_checksum(dep_filepaths, module_data)
-    pickle.dump((dep_filepaths, cur_checksum), open(checksum_filepath, 'wb'))
+    with open(checksum_filepath, 'wb') as file:
+        pickle.dump((dep_filepaths, cur_checksum), file)
