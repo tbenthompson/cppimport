@@ -67,6 +67,8 @@ def template_and_build(filepath, module_data):
     quiet_print("Compiling " + filepath)
     templating.run_templating(module_data)
     build_module.build_module(module_data)
+    if cppimport.config.quiet:
+        os.remove(module_data["rendered_src_filepath"])
     cppimport.checksum.checksum_save(module_data)
 
 def imp_from_filepath(filepath, fullname = None):

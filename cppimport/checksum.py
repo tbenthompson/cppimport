@@ -1,55 +1,64 @@
-import os
-import pickle
+import json
 import hashlib
-import traceback
+import struct
 
 import cppimport.find
 import cppimport.config
 from cppimport.filepaths import make_absolute
 
-# I use .${filename}.cppimporthash as the checksum file for each module.
-def get_checksum_filepath(filepath):
-    return os.path.join(
-        os.path.dirname(filepath),
-        '.' + os.path.basename(filepath) + '.cppimporthash'
-    )
+
+_TAG = b'cppimport'
+_FMT = struct.Struct('q' + str(len(_TAG)) + 's')
 
 def calc_cur_checksum(file_lst, module_data):
     text = b""
     for filepath in file_lst:
-    	with open(filepath, 'rb') as f:
+        with open(filepath, 'rb') as f:
             text += f.read()
     return hashlib.md5(text).hexdigest()
 
+def load_checksum_trailer(module_data):
+    with open(module_data['ext_path'], 'rb') as f:
+        f.seek(-_FMT.size, 2)
+        json_len, tag = _FMT.unpack(f.read(_FMT.size))
+        if tag != _TAG:
+            cppimport.config.quiet_print("Missing trailer tag")
+            return None, None
+        f.seek(-(_FMT.size + json_len), 2)
+        json_s = f.read(json_len)
+    try:
+        deps, old_checksum = json.loads(json_s)
+    except ValueError:
+        cppimport.config.quiet_print(
+            "Failed to load checksum trailer info from already existing "
+            "compiled extension; rebuilding.")
+        return None, None
+    return deps, old_checksum
+
 # Use a checksum to see if the file has been changed since the last compilation
 def is_checksum_current(module_data):
+    deps, old_checksum = load_checksum_trailer(module_data)
+    if old_checksum is None:
+        return False  # Already logged error in load_checksum_trailer.
     try:
-        checksum_filepath = get_checksum_filepath(module_data['filepath'])
-
-        if not os.path.exists(checksum_filepath):
-            return False
-
-        try:
-            with open(checksum_filepath, 'rb') as f:
-                deps, old_checksum = pickle.load(f)
-        except (ValueError, pickle.UnpicklingError) as e:
-            cppimport.config.quiet_print(
-                "Failed to load checksum due to exception" + traceback.format_exc()
-            )
-            return False
-
         cur_checksum = calc_cur_checksum(deps, module_data)
         if old_checksum != cur_checksum:
             return False
         return True
-    except FileNotFoundError as e:
+    except OSError as e:
         print(e)
         print("Checksummed file not found while checking cppimport checksum. Rebuilding.")
         return False
 
-def checksum_save(module_data):
-    checksum_filepath = get_checksum_filepath(module_data['filepath'])
+def save_checksum_trailer(module_data, dep_filepaths, cur_checksum):
+    # We can just append the checksum to the shared object; this is effectively
+    # legal (see e.g. https://stackoverflow.com/questions/10106447).
+    dump = json.dumps([dep_filepaths, cur_checksum]).encode('ascii')
+    dump += _FMT.pack(len(dump), _TAG)
+    with open(module_data['ext_path'], 'ab') as file:
+        file.write(dump)
 
+def checksum_save(module_data):
     dep_filepaths = (
         [
             make_absolute(module_data['filedirname'], d)
@@ -58,7 +67,5 @@ def checksum_save(module_data):
         module_data['extra_source_filepaths'] +
         [module_data['filepath']]
     )
-
     cur_checksum = calc_cur_checksum(dep_filepaths, module_data)
-    with open(checksum_filepath, 'wb') as file:
-        pickle.dump((dep_filepaths, cur_checksum), file)
+    save_checksum_trailer(module_data, dep_filepaths, cur_checksum)
