@@ -1,4 +1,4 @@
-##### If you've used cppimport version 0.0.*, some new features for you! Compiler arguments, multiple source files, bug fixes! Read on.
+##### If you've used cppimport version 0.0.\*, some new features for you! Compiler arguments, multiple source files, bug fixes! Read on.
 
 # Import C or C++ files directly from Python!
 Let's try it out. First, if you're on Linux or OS X, install with the terminal command `pip install cppimport`.
@@ -6,11 +6,6 @@ Let's try it out. First, if you're on Linux or OS X, install with the terminal c
 Most cppimport users combine it with [pybind11](https://github.com/pybind/pybind11), but you can use a range of methods to create your Python extensions. Raw C extensions, Boost.Python, SWIG all work. Let's look at a simple C++ extension:
 
 ```c++
-/*
-<%
-setup_pybind11(cfg)
-%>
-*/
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
@@ -23,6 +18,11 @@ int square(int x) {
 PYBIND11_MODULE(somecode, m) {
     m.def("square", &square);
 }
+/*
+<%
+setup_pybind11(cfg)
+%>
+*/
 ```
 
 Save this code as `somecode.cpp`.
@@ -39,14 +39,10 @@ I'm a big fan of the workflow that this enables, where you can edit both C++ fil
 
 # I want things to be even easier! (Python import hook)
 
-Modify the first section of the .cpp file and add "cppimport" on the first line of the file. This MUST be on the first line. This is explained further down.
+Add a comment containing the string "cppimport" on the first line of the file. This MUST be on the first line. This is explained further down.
 
 ```c++
-/*cppimport
-<%
-setup_pybind11(cfg)
-%>
-*/
+// cppimport
 ```
 
 Then import the file using the import hook:
@@ -63,7 +59,7 @@ Then import the file using the import hook:
 
 **Simpler language please:** Sometimes Python just isn't fast enough. Or you have existing code in a C++ library. So, you write a Python *extension module*, a library of compiled code. I recommend [pybind11](https://github.com/pybind/pybind11) for C++ to Python bindings or [cffi](https://cffi.readthedocs.io/en/latest/) for C to Python bindings. I've done this a lot over the years. But, I discovered that my productivity goes through the floor when my development process goes from *Edit -> Test* in just Python to *Edit -> Compile -> Test* in Python plus C++. So, `cppimport` combines the process of compiling and importing an extension in Python so that you can type `modulename = cppimport.imp("modulename")` and not have to worry about multiple steps. Internally, `cppimport` looks for a file `modulename.cpp`. If one is found, it's run through the Mako templating system to gather compiler options, then it's compiled and loaded as an extension module.
 
-Note that because of the Mako pre-processing, the comments around the configuration block may be omitted.
+Note that because of the Mako pre-processing, the comments around the configuration block may be omitted.  Putting the configuration block at the end of the file, while optional, ensures that line numbers remain correct in compilation error messages.
 
 ### Recompilation only happens when necessary:
 Compilation should only happen the first time the module is imported. The C++ source is compared with a checksum on each import to determine if the file has changed. Additional dependencies (header files!) can be tracked by adding to the Mako header:
