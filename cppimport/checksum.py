@@ -13,8 +13,14 @@ _FMT = struct.Struct('q' + str(len(_TAG)) + 's')
 def calc_cur_checksum(file_lst, module_data):
     text = b""
     for filepath in file_lst:
-        with open(filepath, 'rb') as f:
-            text += f.read()
+        try:
+            with open(filepath, 'rb') as f:
+                text += f.read()
+        except OSError as e:
+            cppimport.config.quiet_print(
+                "Checksummed file not found while checking cppimport checksum "
+                "(%s); rebuilding." % e)
+            return None
     return hashlib.md5(text).hexdigest()
 
 def load_checksum_trailer(module_data):
@@ -40,15 +46,7 @@ def is_checksum_current(module_data):
     deps, old_checksum = load_checksum_trailer(module_data)
     if old_checksum is None:
         return False  # Already logged error in load_checksum_trailer.
-    try:
-        cur_checksum = calc_cur_checksum(deps, module_data)
-        if old_checksum != cur_checksum:
-            return False
-        return True
-    except OSError as e:
-        print(e)
-        print("Checksummed file not found while checking cppimport checksum. Rebuilding.")
-        return False
+    return old_checksum == calc_cur_checksum(deps, module_data)
 
 def save_checksum_trailer(module_data, dep_filepaths, cur_checksum):
     # We can just append the checksum to the shared object; this is effectively
