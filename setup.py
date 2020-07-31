@@ -1,11 +1,9 @@
 from setuptools import setup
 
-try:
-   import pypandoc
-   description = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError):
-   description = open('README.md').read()
-print(description)
+version = open('VERSION').read()
+
+description = open('README.md').read()
+
 setup(
     packages = ['cppimport'],
 
@@ -15,9 +13,10 @@ setup(
     zip_safe = False,
 
     name = 'cppimport',
-    version = '18.11.08',
+    version = version,
     description = 'Import C++ files directly from Python!',
     long_description = description,
+    long_description_content_type = 'text/markdown',
 
     url = 'https://github.com/tbenthompson/cppimport',
     author = 'T. Ben Thompson',
