@@ -24,14 +24,19 @@ def calc_cur_checksum(file_lst, module_data):
     return hashlib.md5(text).hexdigest()
 
 def load_checksum_trailer(module_data):
-    with open(module_data['ext_path'], 'rb') as f:
-        f.seek(-_FMT.size, 2)
-        json_len, tag = _FMT.unpack(f.read(_FMT.size))
-        if tag != _TAG:
-            cppimport.config.quiet_print("Missing trailer tag")
-            return None, None
-        f.seek(-(_FMT.size + json_len), 2)
-        json_s = f.read(json_len)
+    try:
+        with open(module_data['ext_path'], 'rb') as f:
+            f.seek(-_FMT.size, 2)
+            json_len, tag = _FMT.unpack(f.read(_FMT.size))
+            if tag != _TAG:
+                cppimport.config.quiet_print("Missing trailer tag")
+                return None, None
+            f.seek(-(_FMT.size + json_len), 2)
+            json_s = f.read(json_len)
+    except FileNotFoundError:
+        cppimport.config.quiet_print("Failed to find compiled extension; rebuilding.")
+        return None, None
+
     try:
         deps, old_checksum = json.loads(json_s)
     except ValueError:
