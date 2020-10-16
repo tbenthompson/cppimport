@@ -59,5 +59,8 @@ def run_templating(module_data):
         print(mako.exceptions.text_error_template().render())
 
     rendered_src_filepath = get_rendered_source_filepath(filepath)
-    open(rendered_src_filepath, 'w').write(buf.getvalue())
+
+    with open(rendered_src_filepath, 'w', newline = '') as f:
+        f.write(buf.getvalue())
+
     module_data['rendered_src_filepath'] = rendered_src_filepath
