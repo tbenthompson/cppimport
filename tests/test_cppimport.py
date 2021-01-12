@@ -15,17 +15,23 @@ cppimport.set_quiet(False)
 
 @contextlib.contextmanager
 def appended(filename, text):
-    orig = open(filename, "r").read()
-    open(filename, "a").write(text)
+    with open(filename, "r") as f:
+        orig = f.read()
+    with open(filename, "a") as f:
+        f.write(text)
     try:
         yield
     finally:
-        open(filename, "w").write(orig)
+        with open(filename, "w") as f:
+            f.write(orig)
 
 
 def subprocess_check(test_code, returncode=0):
-    p = subprocess.Popen(["python", "-c", test_code], cwd=os.path.dirname(__file__))
-    p.wait()
+    p = subprocess.run(
+        ["python", "-c", test_code], cwd=os.path.dirname(__file__), capture_output=True
+    )
+    print(p.stdout.decode("utf-8"))
+    print(p.stderr.decode("utf-8"))
     assert p.returncode == returncode
 
 
@@ -119,13 +125,14 @@ assert(not hasattr(mymodule, 'Thing'))
 def test_rebuild_header_after_change():
     cppimport.imp("mymodule")
     test_code = """
-import cppimport
-cppimport.set_quiet(False)
-mymodule = cppimport.imp("mymodule")
+import cppimport;
+cppimport.set_quiet(False);
+mymodule = cppimport.imp("mymodule");
 mymodule.Thing().cheer()
 """
     with appended("tests/thing.h", add_to_thing):
         subprocess_check(test_code)
+    assert open("tests/thing.h", "r").read() == ""
 
 
 def test_raw_extensions():
