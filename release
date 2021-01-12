@@ -13,4 +13,7 @@ git commit -m "yy.mm.dd"
 git push
 git tag yy.mm.dd
 git push origin yy.mm.dd
+create release on github
 
+TODO: 
+automate most of this via github actions
