@@ -29,5 +29,6 @@ jobs:
         black . 
     - name: Test with pytest
       run: |
+        pip install --no-use-pep517 --no-deps --disable-pip-version-check -e .
         py.test
 
