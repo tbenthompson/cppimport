@@ -1,4 +1,3 @@
-import time
 import os
 import sys
 import argparse
@@ -21,17 +20,16 @@ PYBIND11_PLUGIN(${fullname}) {
 
 
 def cpp_run():
-    parser = argparse.ArgumentParser(description='Run a C++ file with cppimport')
-    parser.add_argument('filename', help = 'The file to run.')
+    parser = argparse.ArgumentParser(description="Run a C++ file with cppimport")
+    parser.add_argument("filename", help="The file to run.")
     parser.add_argument(
-        '--add_main_caller', '-m',
-        action = 'store_true',
-        help = 'Add a pybind11 function that will call your main()'
+        "--add_main_caller",
+        "-m",
+        action="store_true",
+        help="Add a pybind11 function that will call your main()",
     )
     parser.add_argument(
-        '--verbose', '-v',
-        action = 'store_true',
-        help = 'Tell me everything!'
+        "--verbose", "-v", action="store_true", help="Tell me everything!"
     )
     args = parser.parse_args()
 
@@ -44,11 +42,11 @@ def cpp_run():
     module_name, file_extension = os.path.splitext(filebasename)
 
     if args.add_main_caller:
-        cpprun_dir = '.cpprunfiles'
+        cpprun_dir = ".cpprunfiles"
         if not os.path.exists(cpprun_dir):
             os.makedirs(cpprun_dir)
         src = os.path.join(cpprun_dir, filebasename)
-        open(src, 'w').write(open(filename, 'r').read() + footer)
+        open(src, "w").write(open(filename, "r").read() + footer)
         sys.path.append(cpprun_dir)
     else:
         sys.path.append(filedir)
@@ -60,5 +58,5 @@ def cpp_run():
     module.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cpp_run()
