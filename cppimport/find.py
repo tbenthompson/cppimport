@@ -3,9 +3,11 @@ import sys
 
 import cppimport.config
 
+
 def check_contains_cppimport(filepath):
-    with open(filepath, 'r') as f:
-        return 'cppimport' in f.readline()
+    with open(filepath, "r") as f:
+        return "cppimport" in f.readline()
+
 
 def find_file_in_folders(filename, paths, opt_in):
     for d in paths:
@@ -24,8 +26,9 @@ def find_file_in_folders(filename, paths, opt_in):
             return filepath
     return None
 
+
 def find_matching_path_dirs(moduledir):
-    if moduledir is '':
+    if moduledir == "":
         return sys.path
 
     ds = []
@@ -35,11 +38,12 @@ def find_matching_path_dirs(moduledir):
             ds.append(test_path)
     return ds
 
-def _find_module_cpppath(modulename, opt_in = False):
-    modulepath_without_ext = modulename.replace('.', os.sep)
-    moduledir = os.path.dirname(modulepath_without_ext + '.throwaway')
+
+def _find_module_cpppath(modulename, opt_in=False):
+    modulepath_without_ext = modulename.replace(".", os.sep)
+    moduledir = os.path.dirname(modulepath_without_ext + ".throwaway")
     matching_dirs = find_matching_path_dirs(moduledir)
-    matching_dirs = [os.getcwd() if d == '' else d for d in matching_dirs]
+    matching_dirs = [os.getcwd() if d == "" else d for d in matching_dirs]
     matching_dirs = [
         d if os.path.isabs(d) else os.path.join(os.getcwd(), d) for d in matching_dirs
     ]
@@ -52,12 +56,15 @@ def _find_module_cpppath(modulename, opt_in = False):
 
     return None
 
-def find_module_cpppath(modulename, opt_in = False):
+
+def find_module_cpppath(modulename, opt_in=False):
     filepath = _find_module_cpppath(modulename, opt_in)
     if filepath is None:
         raise ImportError(
-            'Couldn\'t find a file matching the module name: ' +
-            str(modulename) +
-            '  (note: opt_in = ' + str(opt_in) + ')'
+            "Couldn't find a file matching the module name: "
+            + str(modulename)
+            + "  (note: opt_in = "
+            + str(opt_in)
+            + ")"
         )
     return filepath
