@@ -64,9 +64,9 @@ def try_load(module_data):
     try:
         load_module(module_data)
         return True
-    except ImportError:
+    except ImportError as e:
         quiet_print(
-            "ImportError during import with matching checksum. Trying to rebuild."
+            f"ImportError during import with matching checksum: {e}. Trying to rebuild."
         )
         return False
 
