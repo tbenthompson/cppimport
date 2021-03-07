@@ -23,12 +23,7 @@ jobs:
         activate-environment: cppimport
         environment-file: environment.yml
         python-version: ${{ matrix.python-version }}
-    - name: Install cppimport on Mac
-      if: ${{ matrix.os == 'macos-latest' }}
-      run: |
-        CFLAGS='-stdlib=libc++' pip install --no-use-pep517 --no-deps --disable-pip-version-check -e .
     - name: Install cppimport
-      if: ${{ matrix.os != 'macos-latest' }}
       run: |
         pip install --no-use-pep517 --no-deps --disable-pip-version-check -e .
     - name: Lint with flake8
@@ -41,5 +36,10 @@ jobs:
       run: |
         isort --check . 
     - name: Test
+      if: ${{ matrix.os == 'macos-latest' }}
       run: |
-        py.test
+        CFLAGS='-stdlib=libc++' pytest
+    - name: Test
+      if: ${{ matrix.os != 'macos-latest' }}
+      run: |
+        pytest
