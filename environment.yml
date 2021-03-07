@@ -5,6 +5,8 @@ dependencies:
   - pybind11
   - mako
   - black
-  - pytest
   - flake8
   - isort
+  - pytest
+  - pytest-cov
+  - pre-commit
