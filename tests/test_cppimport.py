@@ -148,15 +148,6 @@ def test_extra_sources():
     assert mod.square_sum(3, 4) == 25
 
 
-# TODO: cpprun is incomplete and possibly not a good idea...
-# def test_cpprun():
-#     p = subprocess.Popen([
-#         'cpprun', '-m', 'free_module.cpp'
-#     ], cwd = os.path.dirname(__file__), stdout = subprocess.PIPE)
-#     p.wait()
-#     assert(b'HI!\n' == p.stdout.read())
-
-
 def test_import_hook():
     # Force rebuild to make sure we're not just reloading the already compiled
     # module from disk
