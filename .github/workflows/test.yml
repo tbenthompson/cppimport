@@ -16,10 +16,9 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
+        activate-environment: test
+        environment-file: environment.yml
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        conda env update -f environment.yml -n test
     - name: Install cppimport
       run: |
         pip install --no-use-pep517 --no-deps --disable-pip-version-check -e .
