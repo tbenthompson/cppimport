@@ -4,7 +4,7 @@ import os
 import sys
 import sysconfig
 
-import cppimport.config
+import cppimport
 from cppimport.build_module import build_module
 from cppimport.checksum import checksum_save, is_checksum_valid
 from cppimport.templating import run_templating
@@ -55,7 +55,7 @@ def load_module(module_data):
         # interdependent extensions are loaded but it's undesirable to combine
         # the multiple extensions into a single extension.
         old_flags = sys.getdlopenflags()
-        new_flags = old_flags | cppimport.config.rtld_flags
+        new_flags = old_flags | cppimport.settings["rtld_flags"]
         sys.setdlopenflags(new_flags)
         _actually_load_module(module_data)
         sys.setdlopenflags(old_flags)
@@ -64,7 +64,7 @@ def load_module(module_data):
 
 
 def is_build_needed(module_data):
-    if cppimport.config.should_force_rebuild:
+    if cppimport.settings["force_rebuild"]:
         return False
     if not is_checksum_valid(module_data):
         return False

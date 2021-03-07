@@ -1,7 +1,7 @@
 import os
 import sys
 
-import cppimport.config
+import cppimport
 from cppimport.filepaths import make_absolute
 
 
@@ -24,7 +24,7 @@ def _find_module_cpppath(modulename, opt_in=False):
     matching_dirs = _find_matching_path_dirs(moduledir)
     abs_matching_dirs = _make_dirs_absolute(matching_dirs)
 
-    for ext in cppimport.config.file_exts:
+    for ext in cppimport.settings["file_exts"]:
         modulefilename = os.path.basename(modulepath_without_ext + ext)
         outfilename = _find_file_in_folders(modulefilename, abs_matching_dirs, opt_in)
         if outfilename is not None:

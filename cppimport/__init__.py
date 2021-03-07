@@ -1,13 +1,14 @@
 """
-See ARCHITECTURE.md for a description of the project structure and the internal logic.
+See CONTRIBUTING.md for a description of the project structure and the internal logic.
 """
+import ctypes
 import os
 
-from cppimport.config import (
-    file_exts,
-    force_rebuild,
-    set_rtld_flags,
-    turn_off_strict_prototypes,
+settings = dict(
+    force_rebuild=False,
+    file_exts=[".cpp", ".c"],
+    rtld_flags=ctypes.RTLD_LOCAL,
+    remove_strict_prototypes=True,
 )
 
 
@@ -97,7 +98,22 @@ def build(fullname):
     return module_data["ext_path"]
 
 
+######## BACKWARDS COMPATIBILITY #########
+# Below here, we pay penance for mistakes.
+
 """
 For backwards compatibility, support this alias for the imp function
 """
 cppimport = imp
+
+
+def force_rebuild(to=True):
+    settings["force_rebuild"] = to
+
+
+def turn_off_strict_prototypes():
+    pass  # turned off by default.
+
+
+def set_rtld_flags(flags):
+    settings["rtld_flags"] = flags

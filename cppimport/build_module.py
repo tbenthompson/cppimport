@@ -1,5 +1,6 @@
 import contextlib
 import distutils
+import distutils.sysconfig
 import io
 import logging
 import os
@@ -9,12 +10,15 @@ import tempfile
 import setuptools
 import setuptools.command.build_ext
 
+import cppimport
 from cppimport.filepaths import make_absolute
 
 logger = logging.getLogger(__name__)
 
 
 def build_module(module_data):
+    _handle_strict_prototypes()
+
     build_path = tempfile.mkdtemp()
 
     full_module_name = module_data["fullname"]
@@ -85,6 +89,16 @@ def build_module(module_data):
         distutils.ccompiler.CCompiler.compile = old_compile
 
     shutil.rmtree(build_path)
+
+
+def _handle_strict_prototypes():
+    if not cppimport.settings["remove_strict_prototypes"]:
+        return
+
+    cfg_vars = distutils.sysconfig.get_config_vars()
+    for key, value in cfg_vars.items():
+        if type(value) == str:
+            cfg_vars[key] = value.replace("-Wstrict-prototypes", "")
 
 
 class ImportCppExt(setuptools.Extension):
