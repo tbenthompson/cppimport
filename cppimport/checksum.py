@@ -1,11 +1,10 @@
-import json
 import hashlib
+import json
 import struct
 
-import cppimport.find
 import cppimport.config
+import cppimport.find
 from cppimport.filepaths import make_absolute
-
 
 _TAG = b"cppimport"
 _FMT = struct.Struct("q" + str(len(_TAG)) + "s")

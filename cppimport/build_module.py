@@ -1,13 +1,13 @@
+import contextlib
+import distutils
 import os
+import shutil
 import sys
 import tempfile
-import contextlib
-
-import shutil
-import distutils
 
 import setuptools
 import setuptools.command.build_ext
+
 import cppimport.config
 from cppimport.filepaths import make_absolute
 

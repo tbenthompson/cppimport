@@ -1,10 +1,10 @@
+import importlib
 import os
 import sys
 import sysconfig
-import importlib
 
-import cppimport.config
 import cppimport.checksum
+import cppimport.config
 import cppimport.find
 
 quiet_print = cppimport.config.quiet_print
@@ -73,8 +73,8 @@ def try_load(module_data):
 
 def template_and_build(filepath, module_data):
     # Don't import until here to reduce startup time.
-    import cppimport.templating as templating
     import cppimport.build_module as build_module
+    import cppimport.templating as templating
 
     quiet_print("Compiling " + filepath)
     templating.run_templating(module_data)

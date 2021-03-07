@@ -31,10 +31,10 @@ def setup_pybind11(cfg):
 
 
 def run_templating(module_data):
-    import mako.template
-    import mako.runtime
     import mako.exceptions
     import mako.lookup
+    import mako.runtime
+    import mako.template
 
     if sys.version_info[0] == 2:
         import StringIO as io

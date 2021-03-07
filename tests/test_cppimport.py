@@ -1,14 +1,14 @@
-import os
-import io
-import sys
-import copy
-import subprocess
 import contextlib
+import copy
+import io
+import os
+import subprocess
+import sys
 
 import cppimport
 import cppimport.build_module
-import cppimport.templating
 import cppimport.import_hook
+import cppimport.templating
 
 cppimport.set_quiet(False)
 
