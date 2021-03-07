@@ -3,10 +3,10 @@
 *.so
 *.cppimporthash
 .rendered.*
-.cpprunfiles
 __pycache__
 build
 cppimport.egg-info
 dist
 .cache
 .tox
+.mypy_cache/
