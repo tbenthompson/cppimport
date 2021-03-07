@@ -1,4 +1,4 @@
-See [the ARCHITECTURE.md](ARCHITECTURE.md) for details on the internals of `cppimport`.
+See [the CONTRIBUTING.md](CONTRIBUTING.md) for details on the internals of `cppimport` and how to get involved in development.
 
 # Import C or C++ files directly from Python!
 Let's try it out. First, if you're on Linux or OS X, install with the terminal command `pip install cppimport`.

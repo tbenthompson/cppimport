@@ -2,6 +2,7 @@ import os
 import sys
 
 import cppimport.config
+from cppimport.filepaths import make_absolute
 
 
 def find_module_cpppath(modulename, opt_in=False):
@@ -20,30 +21,28 @@ def find_module_cpppath(modulename, opt_in=False):
 def _find_module_cpppath(modulename, opt_in=False):
     modulepath_without_ext = modulename.replace(".", os.sep)
     moduledir = os.path.dirname(modulepath_without_ext + ".throwaway")
-    matching_dirs = find_matching_path_dirs(moduledir)
-    abs_matching_dirs = make_dirs_absolute(matching_dirs)
+    matching_dirs = _find_matching_path_dirs(moduledir)
+    abs_matching_dirs = _make_dirs_absolute(matching_dirs)
 
     for ext in cppimport.config.file_exts:
         modulefilename = os.path.basename(modulepath_without_ext + ext)
-        outfilename = find_file_in_folders(modulefilename, abs_matching_dirs, opt_in)
+        outfilename = _find_file_in_folders(modulefilename, abs_matching_dirs, opt_in)
         if outfilename is not None:
             return outfilename
 
     return None
 
 
-def make_dirs_absolute(dirs):
+def _make_dirs_absolute(dirs):
     out = []
     for d in dirs:
         if d == "":
             d = os.getcwd()
-        if not os.path.isabs(d):
-            d = os.path.join(os.getcwd(), d)
-        out.append(d)
+        out.append(make_absolute(os.getcwd(), d))
     return out
 
 
-def find_matching_path_dirs(moduledir):
+def _find_matching_path_dirs(moduledir):
     if moduledir == "":
         return sys.path
 
@@ -55,7 +54,7 @@ def find_matching_path_dirs(moduledir):
     return ds
 
 
-def find_file_in_folders(filename, paths, opt_in):
+def _find_file_in_folders(filename, paths, opt_in):
     for d in paths:
         if not os.path.exists(d):
             continue
@@ -67,12 +66,12 @@ def find_file_in_folders(filename, paths, opt_in):
             if f != filename:
                 continue
             filepath = os.path.join(d, f)
-            if opt_in and not check_first_line_contains_cppimport(filepath):
+            if opt_in and not _check_first_line_contains_cppimport(filepath):
                 continue
             return filepath
     return None
 
 
-def check_first_line_contains_cppimport(filepath):
+def _check_first_line_contains_cppimport(filepath):
     with open(filepath, "r") as f:
         return "cppimport" in f.readline()

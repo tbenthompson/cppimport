@@ -1,3 +1,23 @@
+# Contributing 
+
+When contributing to this repository, feel free to add an issue or pull request! There really aren't any rules, but if you're mean, I'll be sad. I'm happy to collaborate on pull requests if you would like. There's no need to submit a perfect, finished product.
+
+To install in development mode and run the tests:
+```
+git clone git@github.com:tbenthompson/cppimport.git 
+cd cppimport
+conda env create
+conda activate cppimport
+pre-commit install
+pip install --no-use-pep517 --disable-pip-version-check -e .
+pytests
+```
+
+Helpful checklist for a pull request:
+
+* Run the tests! Check that the CI workflows are passing.
+* Update `README.md` and `CONTRIBUTING.md` with any relevant changes.
+
 # Architecture
 
 ## Entrypoints:
@@ -14,15 +34,11 @@ There is an alternative, and more explicit interface provided by the `imp`, `imp
 ## What happens when we import a C++ module.
 
 1. First the `cppimport.find.find_module_cpppath` function is used to find a C++ file that matches the desired module name.
-2. Next, we determine if there's already an existing compiled extension that we can use. If there is, the `check_checksum` is used to determine if the extension is up to date with the current code. If the extension is up to date, we attempt to load it. If the extension is loaded successfully, we return the module and we're done! However, if for whichever reason, we can't load an existing extension, we need to build the extension, a process directed by `cppimport.importer.template_and_build`.
+2. Next, we determine if there's already an existing compiled extension that we can use. If there is, the `cppimport.importer.is_build_needed` function is used to determine if the extension is up to date with the current code. If the extension is up to date, we attempt to load it. If the extension is loaded successfully, we return the module and we're done! However, if for whichever reason, we can't load an existing extension, we need to build the extension, a process directed by `cppimport.importer.template_and_build`.
 3. The first step of building is to run the C++ file through the Mako templating system with the `cppimport.templating.run_templating` function. The main purpose of this is to allow users to embed configuration information into their C++ file. Without some sort of similar mechanism, there would be no way of passing information to build system because the `import modulename` statement can't carry information. The templating serves a secondary benefit in that simple code generation can be performed if needed. However, most users probably stick to a simple header or footer similar to the one demonstrated in the README. 
-4. After running the templating, we use setuptools to build the C++ extension using `cppimport.build_module.build_module`.
-
-## Internal submodules
-
-* `importer`
-* `find` -- this module implements the `sys.path` directory tree search for matching C++ files through the function `find_module_cpppath`. 
-* 
+4. Next, we use setuptools to build the C++ extension using `cppimport.build_module.build_module`. This function calls setuptools with the appropriate arguments to build the extension in place next to the C++ file in the directory tree.
+5. Next, we call `cppimport.checksum.checksum_save` to add a hash of the appended contents of all relevant source and header files. This checksum is appended to the end of the `.so` or `.dylib` file. This seems legal according to specifications and, in practice, causes no problems.
+6. Finally, the compiled and loaded extension module is returned to the user.
 
 ## Useful links
 
