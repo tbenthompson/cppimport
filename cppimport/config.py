@@ -1,25 +1,19 @@
+"""
+Configuration settings for cppimport.
+
+TODO: This module should be sanitized so that there is a single dictionary of
+configuration settings.
+"""
 import ctypes
 
-quiet = True
 should_force_rebuild = False
 file_exts = [".cpp", ".c"]
 rtld_flags = ctypes.RTLD_LOCAL
 
 
-def set_quiet(to):
-    global quiet
-    quiet = to
-
-
 def force_rebuild(to=True):
     global should_force_rebuild
     should_force_rebuild = to
-
-
-def quiet_print(a):
-    global quiet
-    if not quiet:
-        print(a)
 
 
 def turn_off_strict_prototypes():

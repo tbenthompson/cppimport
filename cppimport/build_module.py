@@ -1,35 +1,17 @@
 import contextlib
 import distutils
+import io
+import logging
 import os
 import shutil
-import sys
 import tempfile
 
 import setuptools
 import setuptools.command.build_ext
 
-import cppimport.config
 from cppimport.filepaths import make_absolute
 
-if sys.version_info[0] == 2:
-    import StringIO as io
-else:
-    import io
-
-
-@contextlib.contextmanager
-def stdchannel_redirected(stdchannel):
-    """
-    Redirects stdout or stderr to a StringIO object. As of python 3.4, there is a
-    standard library contextmanager for this, but backwards compatibility!
-    """
-    try:
-        s = io.StringIO()
-        old = getattr(sys, stdchannel)
-        setattr(sys, stdchannel, s)
-        yield s
-    finally:
-        setattr(sys, stdchannel, old)
+logger = logging.getLogger(__name__)
 
 
 # Subclass setuptools Extension to add a parameter specifying where the shared
@@ -91,11 +73,7 @@ def parallel_compile(
             src, ext = build[obj]
         except KeyError:
             return
-        # import time
-        # start = time.time()
         self._compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
-        # end = time.time()
-        # print("took " + str(end - start) + " to compile " + str(obj))
 
     # imap is evaluated on demand, converting to list() forces execution
     list(multiprocessing.pool.ThreadPool(N).imap(_single_compile, objects))
@@ -142,11 +120,7 @@ def build_module(module_data):
     args = ["build_ext", "--inplace"]
     args.append("--build-temp=" + build_path)
     args.append("--build-lib=" + build_path)
-
-    if cppimport.config.quiet:
-        args.append("-q")
-    else:
-        args.append("-v")
+    args.append("-v")
 
     setuptools_args = dict(
         name=full_module_name,
@@ -156,20 +130,21 @@ def build_module(module_data):
     )
 
     # Monkey patch in the parallel compiler if requested.
-    py33orgreater = sys.version_info[0] >= 3 and sys.version_info[1] >= 3
-    parallelize = cfg.get("parallel") and py33orgreater
+    parallelize = cfg.get("parallel")
     if parallelize:
         old_compile = distutils.ccompiler.CCompiler.compile
         distutils.ccompiler.CCompiler.compile = parallel_compile
 
-    if cppimport.config.quiet:
-        with stdchannel_redirected("stdout"):
-            with stdchannel_redirected("stderr"):
-                setuptools.setup(**setuptools_args)
-    else:
-        setuptools.setup(**setuptools_args)
+    f = io.StringIO()
+    with contextlib.redirect_stdout(f):
+        with contextlib.redirect_stderr(f):
+            setuptools.setup(**setuptools_args)
+    logger.debug(f"Setuptools/compiler output: {f.getvalue()}")
 
     # Remove the parallel compiler to not corrupt the outside environment.
+    # TODO: this will still cause problems if there is multithreaded code
+    # interacting with distutils. Ideally, we'd just subclass CCompiler
+    # instead.
     if parallelize:
         distutils.ccompiler.CCompiler.compile = old_compile
 

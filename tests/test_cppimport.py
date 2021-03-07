@@ -1,6 +1,6 @@
 import contextlib
 import copy
-import io
+import logging
 import os
 import subprocess
 import sys
@@ -10,7 +10,14 @@ import cppimport.build_module
 import cppimport.import_hook
 import cppimport.templating
 
-cppimport.set_quiet(False)
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+root_logger.addHandler(handler)
 
 
 @contextlib.contextmanager
@@ -36,14 +43,6 @@ def subprocess_check(test_code, returncode=0):
     print(p.stdout.decode("utf-8"))
     print(p.stderr.decode("utf-8"))
     assert p.returncode == returncode
-
-
-def test_redirected_stream():
-    sys.stderr = io.StringIO()
-    with cppimport.build_module.stdchannel_redirected("stdout") as s:
-        with cppimport.build_module.stdchannel_redirected("stderr"):
-            print("EEEP!")
-    assert s.getvalue() == "EEEP!\n"
 
 
 def test_find_module_cpppath():
@@ -129,7 +128,6 @@ def test_rebuild_header_after_change():
     cppimport.imp("mymodule")
     test_code = """
 import cppimport;
-cppimport.set_quiet(False);
 mymodule = cppimport.imp("mymodule");
 mymodule.Thing().cheer()
 """

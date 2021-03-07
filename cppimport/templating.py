@@ -1,5 +1,17 @@
+import logging
 import os
 import sys
+
+logger = logging.getLogger(__name__)
+
+
+def setup_pybind11(cfg):
+    import pybind11
+
+    cfg["include_dirs"] += [pybind11.get_include(), pybind11.get_include(True)]
+    # Prefix with c++11 arg instead of suffix so that if a user specifies c++14
+    # (or later!) then it won't be overridden.
+    cfg["compiler_args"] = ["-std=c++11", "-fvisibility=hidden"] + cfg["compiler_args"]
 
 
 def get_rendered_source_filepath(filepath):
@@ -19,15 +31,6 @@ class BuildArgs(dict):
 
     def __setitem__(self, key, value):
         super(BuildArgs, self).__setitem__(self._key_mapping.get(key, key), value)
-
-
-def setup_pybind11(cfg):
-    import pybind11
-
-    cfg["include_dirs"] += [pybind11.get_include(), pybind11.get_include(True)]
-    # Prefix with c++11 arg instead of suffix so that if a user specifies c++14
-    # (or later!) then it won't be overridden.
-    cfg["compiler_args"] = ["-std=c++11", "-fvisibility=hidden"] + cfg["compiler_args"]
 
 
 def run_templating(module_data):
@@ -62,7 +65,7 @@ def run_templating(module_data):
     try:
         tmpl.render_context(ctx)
     except Exception:
-        print(mako.exceptions.text_error_template().render())
+        logger.error(mako.exceptions.text_error_template().render())
 
     rendered_src_filepath = get_rendered_source_filepath(filepath)
 
