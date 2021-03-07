@@ -31,7 +31,7 @@ def subprocess_check(test_code, returncode=0):
         ["python", "-c", test_code],
         cwd=os.path.dirname(__file__),
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
     )
     print(p.stdout.decode("utf-8"))
     print(p.stderr.decode("utf-8"))
