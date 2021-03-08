@@ -1,6 +1,7 @@
 <%
 setup_pybind11(cfg)
 cfg['sources'] = ['extra_sources1.cpp']
+cfg['parallel'] = True
 %>
 #include <pybind11/pybind11.h>
 

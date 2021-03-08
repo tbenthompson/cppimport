@@ -1,0 +1,5 @@
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "-s --tb=short"

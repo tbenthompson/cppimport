@@ -1,16 +1,23 @@
-import os
-import io
-import sys
-import copy
-import subprocess
 import contextlib
+import copy
+import logging
+import os
+import subprocess
+import sys
 
 import cppimport
 import cppimport.build_module
 import cppimport.templating
-import cppimport.import_hook
+from cppimport.find import find_module_cpppath
 
-cppimport.set_quiet(False)
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+root_logger.addHandler(handler)
 
 
 @contextlib.contextmanager
@@ -28,31 +35,26 @@ def appended(filename, text):
 
 def subprocess_check(test_code, returncode=0):
     p = subprocess.run(
-        ["python", "-c", test_code], cwd=os.path.dirname(__file__), capture_output=True
+        ["python", "-c", test_code],
+        cwd=os.path.dirname(__file__),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     print(p.stdout.decode("utf-8"))
     print(p.stderr.decode("utf-8"))
     assert p.returncode == returncode
 
 
-def test_redirected_stream():
-    sys.stderr = io.StringIO()
-    with cppimport.build_module.stdchannel_redirected("stdout") as s:
-        with cppimport.build_module.stdchannel_redirected("stderr"):
-            print("EEEP!")
-    assert s.getvalue() == "EEEP!\n"
-
-
 def test_find_module_cpppath():
-    mymodule_loc = cppimport.find.find_module_cpppath("mymodule")
+    mymodule_loc = find_module_cpppath("mymodule")
     mymodule_dir = os.path.dirname(mymodule_loc)
     assert os.path.basename(mymodule_loc) == "mymodule.cpp"
 
-    apackage = cppimport.find.find_module_cpppath("apackage.mymodule")
+    apackage = find_module_cpppath("apackage.mymodule")
     apackage_correct = os.path.join(mymodule_dir, "apackage", "mymodule.cpp")
     assert apackage == apackage_correct
 
-    inner = cppimport.find.find_module_cpppath("apackage.inner.mymodule")
+    inner = find_module_cpppath("apackage.inner.mymodule")
     inner_correct = os.path.join(mymodule_dir, "apackage", "inner", "mymodule.cpp")
     assert inner == inner_correct
 
@@ -70,6 +72,18 @@ def module_tester(mod, cheer=False):
 
 def test_mymodule():
     mymodule = cppimport.imp("mymodule")
+    module_tester(mymodule)
+
+
+def test_mymodule_build():
+    cppimport.build("mymodule")
+    import mymodule
+
+    module_tester(mymodule)
+
+
+def test_mymodule_from_filepath():
+    mymodule = cppimport.imp_from_filepath("tests/mymodule.cpp")
     module_tester(mymodule)
 
 
@@ -126,7 +140,6 @@ def test_rebuild_header_after_change():
     cppimport.imp("mymodule")
     test_code = """
 import cppimport;
-cppimport.set_quiet(False);
 mymodule = cppimport.imp("mymodule");
 mymodule.Thing().cheer()
 """
@@ -140,21 +153,16 @@ def test_raw_extensions():
     assert raw_extension.add(1, 2) == 3
 
 
-def test_extra_sources():
+def test_extra_sources_and_parallel():
+    cppimport.settings["force_rebuild"] = True
     mod = cppimport.imp("extra_sources")
+    cppimport.settings["force_rebuild"] = False
     assert mod.square_sum(3, 4) == 25
 
 
-# TODO: cpprun is incomplete and possibly not a good idea...
-# def test_cpprun():
-#     p = subprocess.Popen([
-#         'cpprun', '-m', 'free_module.cpp'
-#     ], cwd = os.path.dirname(__file__), stdout = subprocess.PIPE)
-#     p.wait()
-#     assert(b'HI!\n' == p.stdout.read())
-
-
 def test_import_hook():
+    import cppimport.import_hook
+
     # Force rebuild to make sure we're not just reloading the already compiled
     # module from disk
     cppimport.force_rebuild(True)

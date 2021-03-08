@@ -1,12 +1,15 @@
+import logging
 import sys
 import traceback
-import cppimport.importer
+
+import cppimport
+
+logger = logging.getLogger(__name__)
 
 
 class Hook(object):
     def __init__(self):
         self._running = False
-        self.print_exceptions = False
 
     def find_module(self, fullname, path=None):
         # Prevent re-entry by the underlying importer
@@ -15,15 +18,15 @@ class Hook(object):
 
         try:
             self._running = True
-            cppimport.importer.imp(fullname, opt_in=True)
+            cppimport.imp(fullname, opt_in=True)
         except ImportError:
             # ImportError should be quashed because that simply means cppimport
             # didn't find anything, and probably shouldn't have found anything!
-            if self.print_exceptions:
-                print(traceback.format_exc())
+            logger.debug(traceback.format_exc())
         finally:
             self._running = False
 
 
+# Add the hook to the list of import handlers for Python.
 hook_obj = Hook()
 sys.meta_path.insert(0, hook_obj)

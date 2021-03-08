@@ -1,4 +1,4 @@
-update the version number in setup.py with yy.mm.dd
+update the version number in VERSION with calver: yy.mm.dd
 python setup.py sdist upload -r pypi
 
 TEST: 
