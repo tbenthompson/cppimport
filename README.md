@@ -5,8 +5,10 @@
     <a target="_blank" href="https://pypi.org/project/cppimport/" title="PyPI version"><img src="https://img.shields.io/pypi/v/cppimport?logo=pypi"></a>
     <a target="_blank" href="https://pypi.org/project/cppimport/" title="PyPI"><img src="https://img.shields.io/pypi/dm/cppimport"></a>
     <a target="_blank" href="LICENSE" title="License: MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
-    <a target="_blank" href="https://github.com/tbenthompson/cppimport/actions" title="Test Status"><img src="https://github.com/tbenthompson/cppimport/workflows/Test/badge.svg?branch=stable"></a>
-    <a target="_blank" href="https://github.com/tbenthompson/cppimport/actions" title="Code coverage"><img src="https://badgen.net/codecov/c/github/tbenthompson/cppimport"></a>
+    <a target="_blank" href="https://github.com/tbenthompson/cppimport/actions" title="Test Status"><img src="https://github.com/tbenthompson/cppimport/actions/workflows/test.yml/badge.svg"></a>
+    <a target="_blank" href="https://codecov.io/gh/tbenthompson/cppimport" title="Code coverage"><img src="https://codecov.io/gh/tbenthompson/cppimport/branch/stable/graph/badge.svg?token=GWpX62xMt5"/></a>
+</a>
+
 </p>
 
 ## Contributing and architecture
