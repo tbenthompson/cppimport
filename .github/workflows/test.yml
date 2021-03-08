@@ -38,7 +38,7 @@ jobs:
     - name: Test
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
-        CFLAGS='-stdlib=libc++' pytest
+        CFLAGS='-stdlib=libc++' pytest --cov=./ --cov-report=xml
     - name: Test
       if: ${{ matrix.os != 'macos-latest' }}
       run: |
