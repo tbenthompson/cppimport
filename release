@@ -1,11 +1,13 @@
+PUBLISH TO PYPI:
 update the version number in VERSION with calver: yy.mm.dd
 python setup.py sdist upload -r pypi
 
-TEST: 
+SANITY TEST: 
 open new terminal
-mkvirtualenv adf
+mamba create -n testenv python=3 pip
+conda activate testenv
 pip install cppimport
-cd ~/projects/cppimport/tests
+cd tests
 python -c 'import cppimport; assert(cppimport.imp("mymodule").add(1,2) == 3);'
 
 GIT:
