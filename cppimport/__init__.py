@@ -100,6 +100,7 @@ def build(fullname):
 
 ######## BACKWARDS COMPATIBILITY #########
 # Below here, we pay penance for mistakes.
+# TODO: Add DeprecationWarning
 
 """
 For backwards compatibility, support this alias for the imp function

@@ -7,8 +7,8 @@ import sys
 
 import cppimport
 import cppimport.build_module
-import cppimport.import_hook
 import cppimport.templating
+from cppimport.find import find_module_cpppath
 
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
@@ -46,15 +46,15 @@ def subprocess_check(test_code, returncode=0):
 
 
 def test_find_module_cpppath():
-    mymodule_loc = cppimport.find.find_module_cpppath("mymodule")
+    mymodule_loc = find_module_cpppath("mymodule")
     mymodule_dir = os.path.dirname(mymodule_loc)
     assert os.path.basename(mymodule_loc) == "mymodule.cpp"
 
-    apackage = cppimport.find.find_module_cpppath("apackage.mymodule")
+    apackage = find_module_cpppath("apackage.mymodule")
     apackage_correct = os.path.join(mymodule_dir, "apackage", "mymodule.cpp")
     assert apackage == apackage_correct
 
-    inner = cppimport.find.find_module_cpppath("apackage.inner.mymodule")
+    inner = find_module_cpppath("apackage.inner.mymodule")
     inner_correct = os.path.join(mymodule_dir, "apackage", "inner", "mymodule.cpp")
     assert inner == inner_correct
 
@@ -72,6 +72,18 @@ def module_tester(mod, cheer=False):
 
 def test_mymodule():
     mymodule = cppimport.imp("mymodule")
+    module_tester(mymodule)
+
+
+def test_mymodule_build():
+    cppimport.build("mymodule")
+    import mymodule
+
+    module_tester(mymodule)
+
+
+def test_mymodule_from_filepath():
+    mymodule = cppimport.imp_from_filepath("tests/mymodule.cpp")
     module_tester(mymodule)
 
 
@@ -141,12 +153,16 @@ def test_raw_extensions():
     assert raw_extension.add(1, 2) == 3
 
 
-def test_extra_sources():
+def test_extra_sources_and_parallel():
+    cppimport.settings["force_rebuild"] = True
     mod = cppimport.imp("extra_sources")
+    cppimport.settings["force_rebuild"] = False
     assert mod.square_sum(3, 4) == 25
 
 
 def test_import_hook():
+    import cppimport.import_hook
+
     # Force rebuild to make sure we're not just reloading the already compiled
     # module from disk
     cppimport.force_rebuild(True)
