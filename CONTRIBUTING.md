@@ -13,11 +13,6 @@ pip install --no-use-pep517 --disable-pip-version-check -e .
 pytests
 ```
 
-Helpful checklist for a pull request:
-
-* Run the tests! Check that the CI workflows are passing.
-* Update `README.md` and `CONTRIBUTING.md` with any relevant changes.
-
 # Architecture
 
 ## Entrypoints:
