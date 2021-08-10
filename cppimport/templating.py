@@ -26,10 +26,14 @@ def run_templating(module_data):
     ctx = mako.runtime.Context(buf, **module_data)
 
     filepath = module_data["filepath"]
-    lookup = mako.lookup.TemplateLookup(directories=[os.path.dirname(filepath)])
-    tmpl = mako.template.Template(filename=filepath, lookup=lookup)
-
-    tmpl.render_context(ctx)
+    try:
+        template_dirs = [os.path.dirname(filepath)]
+        lookup = mako.lookup.TemplateLookup(directories=template_dirs)
+        tmpl = lookup.get_template(module_data["filebasename"])
+        tmpl.render_context(ctx)
+    except:  # noqa: E722
+        logger.exception(mako.exceptions.text_error_template().render())
+        raise
 
     rendered_src_filepath = get_rendered_source_filepath(filepath)
 
