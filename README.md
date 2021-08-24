@@ -168,3 +168,4 @@ By default, these explicit function do not require the "cppimport" keyword on th
 The CI system does not run on Windows. A PR would be welcome adding further Windows support. I've used `cppimport` with MinGW-w64 and Python 3.6 and had good success. I've also had reports that `cppimport` works on Windows with Python 3.6 and Visual C++ 2015 Build Tools. The main challenge is making sure that distutils is aware of your available compilers. Try out the suggestion [here](https://stackoverflow.com/questions/3297254/how-to-use-mingws-gcc-compiler-when-installing-python-package-using-pip).
 
 ## cppimport uses the MIT License
+
