@@ -74,7 +74,9 @@ This region surrounded by `<%` and `%>` is a [Mako](https://www.makotemplates.or
 Note that because of the Mako pre-processing, the comments around the configuration block may be omitted.  Putting the configuration block at the end of the file, while optional, ensures that line numbers remain correct in compilation error messages.
 
 ## Building for production
-A simple cli utility for building source files manually is provided. Usage is as simple as
+In production deployments you usually don't want to include a c/c++ compiler, all the sources and compile at runtime. Therefore, a simple cli utility for pre-compiling all source files is provided. This utility may, for example, be used in CI/CD pipelines. 
+
+Usage is as simple as
 
 ```commandline
 python -m cppimport build
