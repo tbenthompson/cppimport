@@ -82,12 +82,12 @@ python -m cppimport build
 
 This will build all `*.c` and `*.cpp` files in the current directory (and it's subdirectories) if they are eligible to be imported (i.e. contain the `// cppimport` comment in the first line).
 
-Additionally, you may specifiy one or more root directories or source files to be built:
+Alternatively, you may specifiy one or more root directories or source files to be built:
 
 ```commandline
 python -m cppimport build ./my/directory/ ./my/single/file.cpp
 ```
-<small>Note: When specifying a path to a file, the header check (`// cppimport`) is skipped for that file.</small>
+_Note: When specifying a path to a file, the header check (`// cppimport`) is skipped for that file._
 
 ### Fine-tuning for production
 To further improve startup performance for production builds, you can opt-in to skip the checksum and compiled binary existence checks during importing by either setting the environment variable `CPPIMPORT_RELEASE_MODE` to `true` or setting the configuration from within Python:
