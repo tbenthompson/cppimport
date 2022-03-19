@@ -16,7 +16,7 @@ def _run_from_commandline(raw_args):
         "--quiet", "-q", action="store_true", help="Only print critical log messages."
     )
 
-    subparsers = parser.add_subparsers(dest="action")
+    subparsers = parser.add_subparsers(dest="action", required=True)
 
     build_parser = subparsers.add_parser(
         "build",
@@ -42,10 +42,10 @@ def _run_from_commandline(raw_args):
     else:
         logging.basicConfig(level=logging.INFO)
 
-    if args.force:
-        settings["force_rebuild"] = True
-
     if args.action == "build":
+        if args.force:
+            settings["force_rebuild"] = True
+
         for path in args.root or ["."]:
             path = os.path.abspath(os.path.expandvars(path))
             if os.path.isfile(path):
@@ -56,6 +56,8 @@ def _run_from_commandline(raw_args):
                 raise FileNotFoundError(
                     f'The given root path "{path}" could not be found.'
                 )
+    else:
+        parser.print_usage()
 
 
 if __name__ == "__main__":
