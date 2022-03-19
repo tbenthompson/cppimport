@@ -2,14 +2,20 @@
 See CONTRIBUTING.md for a description of the project structure and the internal logic.
 """
 import ctypes
+import logging
 import os
+
+from cppimport.find import _check_first_line_contains_cppimport
 
 settings = dict(
     force_rebuild=False,
     file_exts=[".cpp", ".c"],
     rtld_flags=ctypes.RTLD_LOCAL,
     remove_strict_prototypes=True,
+    release_mode=os.getenv("CPPIMPORT_RELEASE_MODE", "0").lower()
+    in ("true", "yes", "1"),
 )
+_logger = logging.getLogger("cppimport")
 
 
 def imp(fullname, opt_in=False):
@@ -61,7 +67,7 @@ def imp_from_filepath(filepath, fullname=None):
     if fullname is None:
         fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
-    if not is_build_needed(module_data) or not try_load(module_data):
+    if is_build_needed(module_data) or not try_load(module_data):
         template_and_build(filepath, module_data)
         load_module(module_data)
     return module_data["module"]
@@ -81,21 +87,61 @@ def build(fullname):
     ext_path : the path to the compiled extension.
     """
     from cppimport.find import find_module_cpppath
+
+    # Search through sys.path to find a file that matches the module
+    filepath = find_module_cpppath(fullname)
+    return build_filepath(filepath, fullname=fullname)
+
+
+def build_filepath(filepath, fullname=None):
+    """
+    `build_filepath` builds a extension module like `build` but allows
+    to directly specify a file path.
+
+    Parameters
+    ----------
+    filepath : the filepath to the C++ file to build.
+    fullname : the name of the module to build.
+
+    Returns
+    -------
+    ext_path : the path to the compiled extension.
+    """
     from cppimport.importer import (
         is_build_needed,
         setup_module_data,
         template_and_build,
     )
 
-    # Search through sys.path to find a file that matches the module
-    filepath = find_module_cpppath(fullname)
-
+    if fullname is None:
+        fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
-    if not is_build_needed(module_data):
+    if is_build_needed(module_data):
         template_and_build(filepath, module_data)
 
     # Return the path to the built module
     return module_data["ext_path"]
+
+
+def build_all(root_directory):
+    """
+    `build_all` builds a extension module like `build` for each eligible (that is,
+    containing the "cppimport" header) source file within the given `root_directory`.
+
+    Parameters
+    ----------
+    root_directory : the root directory to search for cpp source files in.
+    """
+    for directory, _, files in os.walk(root_directory):
+        for file in files:
+            if (
+                not file.startswith(".")
+                and os.path.splitext(file)[1] in settings["file_exts"]
+            ):
+                full_path = os.path.join(directory, file)
+                if _check_first_line_contains_cppimport(full_path):
+                    _logger.info(f"Building: {full_path}")
+                    build_filepath(full_path)
 
 
 ######## BACKWARDS COMPATIBILITY #########
