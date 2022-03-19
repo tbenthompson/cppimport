@@ -1,8 +1,14 @@
 """
 See CONTRIBUTING.md for a description of the project structure and the internal logic.
 """
+import argparse
 import ctypes
+import logging
 import os
+import sys
+
+from cppimport.find import _check_first_line_contains_cppimport
+
 
 settings = dict(
     force_rebuild=False,
@@ -10,6 +16,7 @@ settings = dict(
     rtld_flags=ctypes.RTLD_LOCAL,
     remove_strict_prototypes=True,
 )
+_logger = logging.getLogger('cppimport')
 
 
 def imp(fullname, opt_in=False):
@@ -81,21 +88,101 @@ def build(fullname):
     ext_path : the path to the compiled extension.
     """
     from cppimport.find import find_module_cpppath
+
+    # Search through sys.path to find a file that matches the module
+    filepath = find_module_cpppath(fullname)
+    return build_filepath(filepath, fullname=fullname)
+
+
+def build_filepath(filepath, fullname=None):
+    """
+    `build_filepath` builds a extension module like `build` but allows
+    to directly specify a file path.
+
+    Parameters
+    ----------
+    filepath : the filepath to the C++ file to build.
+    fullname : the name of the module to build.
+
+    Returns
+    -------
+    ext_path : the path to the compiled extension.
+    """
     from cppimport.importer import (
         is_build_needed,
         setup_module_data,
         template_and_build,
     )
 
-    # Search through sys.path to find a file that matches the module
-    filepath = find_module_cpppath(fullname)
-
+    if fullname is None:
+        fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
     if not is_build_needed(module_data):
         template_and_build(filepath, module_data)
 
     # Return the path to the built module
     return module_data["ext_path"]
+
+
+def build_all(root_directory):
+    """
+    `build_all` builds a extension module like `build` for each eligible (that is, containing the
+    "cppimport" header) source file within the given `root_directory`.
+
+    Parameters
+    ----------
+    root_directory : the root directory to search for cpp source files in.
+
+    Returns
+    -------
+    ext_path : the path to the compiled extension.
+    """
+    for directory, _, files in os.walk(root_directory):
+        for file in files:
+            if not file.startswith('.') and os.path.splitext(file)[1] in settings['file_exts']:
+                full_path = os.path.join(directory, file)
+                if _check_first_line_contains_cppimport(full_path):
+                    _logger.info(f"Building: {full_path}")
+                    build_filepath(full_path)
+
+
+######## COMMAND LINE INTERFACE #########
+def _run_from_commandline(raw_args):
+    parser = argparse.ArgumentParser("cppimport")
+
+    parser.add_argument('--verbose', '-v', action='store_true', help="Increase log verbosity.")
+    parser.add_argument('--quiet', '-q', action='store_true', help="Only print critical log messages.")
+
+    subparsers = parser.add_subparsers(dest="action")
+
+    build_parser = subparsers.add_parser('build', help="Build one or more cpp source files.",)
+    build_parser.add_argument('root',
+                              help="The file or directory to build. If a directory is given, "
+                                   "cppimport walks it recursively to build all eligible source "
+                                   "files.",
+                              nargs='?')
+
+    args = parser.parse_args(raw_args[1:])
+
+    if args.quiet:
+        logging.basicConfig(level=logging.CRITICAL)
+    elif args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    if args.action == 'build':
+        root = os.path.abspath(os.path.expandvars(args.root)) if args.root else None
+        if root and os.path.isfile(root):
+            build_filepath(root)
+        elif not root or os.path.isdir(root):
+            build_all(root or os.getcwd())
+        else:
+            raise FileNotFoundError(f"The given root path \"{root}\" could not be found.")
+
+
+if __name__ == '__main__':
+    _run_from_commandline(sys.argv)
 
 
 ######## BACKWARDS COMPATIBILITY #########
@@ -118,3 +205,4 @@ def turn_off_strict_prototypes():
 
 def set_rtld_flags(flags):
     settings["rtld_flags"] = flags
+
