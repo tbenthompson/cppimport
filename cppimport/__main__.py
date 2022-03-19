@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-from cppimport import build_all, build_filepath
+from cppimport import build_all, build_filepath, settings
 
 
 def _run_from_commandline(raw_args):
@@ -29,6 +29,9 @@ def _run_from_commandline(raw_args):
         "files.",
         nargs="*",
     )
+    build_parser.add_argument(
+        "--force", "-f", action="store_true", help="Force rebuild."
+    )
 
     args = parser.parse_args(raw_args[1:])
 
@@ -38,6 +41,9 @@ def _run_from_commandline(raw_args):
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+
+    if args.force:
+        settings["force_rebuild"] = True
 
     if args.action == "build":
         for path in args.root or ["."]:
