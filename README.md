@@ -73,6 +73,29 @@ This region surrounded by `<%` and `%>` is a [Mako](https://www.makotemplates.or
 
 Note that because of the Mako pre-processing, the comments around the configuration block may be omitted.  Putting the configuration block at the end of the file, while optional, ensures that line numbers remain correct in compilation error messages.
 
+## Building for production
+A simple cli utility for building source files manually is provided. Usage is as simple as
+
+```commandline
+python -m cppimport build
+```
+
+This will build all `*.c` and `*.cpp` files in the current directory (and it's subdirectories) if they are eligible to be imported (i.e. contain the `// cppimport` comment in the first line).
+
+Additionally, you may specifiy one or more root directories or source files to be built:
+
+```commandline
+python -m cppimport build ./my/directory/ ./my/single/file.cpp
+```
+<small>Note: When specifying a path to a file, the header check (`// cppimport`) is skipped for that file.</small>
+
+### Fine-tuning for production
+To further improve startup performance for production builds, you can opt-in to skip the checksum and compiled binary existence checks during importing by either setting the environment variable `CPPIMPORT_RELEASE_MODE` to `true` or setting the configuration from within Python:
+```python
+cppimport.settings['release_mode'] = True
+```
+**Warning:** Make sure to have all binaries pre-compiled when in release mode, as importing any missing ones will cause exceptions. 
+
 ## Frequently asked questions
 
 ### What's actually going on?

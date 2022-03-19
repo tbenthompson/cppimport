@@ -9,15 +9,15 @@ import sys
 
 from cppimport.find import _check_first_line_contains_cppimport
 
-
 settings = dict(
     force_rebuild=False,
     file_exts=[".cpp", ".c"],
     rtld_flags=ctypes.RTLD_LOCAL,
     remove_strict_prototypes=True,
-    skip_checksum_check=os.getenv('CPPIMPORT_SKIP_CHECKSUM_CHECK', '0').lower() in ('true', 'yes', '1'),
+    release_mode=os.getenv("CPPIMPORT_RELEASE_MODE", "0").lower()
+    in ("true", "yes", "1"),
 )
-_logger = logging.getLogger('cppimport')
+_logger = logging.getLogger("cppimport")
 
 
 def imp(fullname, opt_in=False):
@@ -69,7 +69,7 @@ def imp_from_filepath(filepath, fullname=None):
     if fullname is None:
         fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
-    if not is_build_needed(module_data) or not try_load(module_data):
+    if is_build_needed(module_data) or not try_load(module_data):
         template_and_build(filepath, module_data)
         load_module(module_data)
     return module_data["module"]
@@ -118,7 +118,7 @@ def build_filepath(filepath, fullname=None):
     if fullname is None:
         fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
-    if not is_build_needed(module_data):
+    if is_build_needed(module_data):
         template_and_build(filepath, module_data)
 
     # Return the path to the built module
@@ -127,20 +127,19 @@ def build_filepath(filepath, fullname=None):
 
 def build_all(root_directory):
     """
-    `build_all` builds a extension module like `build` for each eligible (that is, containing the
-    "cppimport" header) source file within the given `root_directory`.
+    `build_all` builds a extension module like `build` for each eligible (that is,
+    containing the "cppimport" header) source file within the given `root_directory`.
 
     Parameters
     ----------
     root_directory : the root directory to search for cpp source files in.
-
-    Returns
-    -------
-    ext_path : the path to the compiled extension.
     """
     for directory, _, files in os.walk(root_directory):
         for file in files:
-            if not file.startswith('.') and os.path.splitext(file)[1] in settings['file_exts']:
+            if (
+                not file.startswith(".")
+                and os.path.splitext(file)[1] in settings["file_exts"]
+            ):
                 full_path = os.path.join(directory, file)
                 if _check_first_line_contains_cppimport(full_path):
                     _logger.info(f"Building: {full_path}")
@@ -151,17 +150,26 @@ def build_all(root_directory):
 def _run_from_commandline(raw_args):
     parser = argparse.ArgumentParser("cppimport")
 
-    parser.add_argument('--verbose', '-v', action='store_true', help="Increase log verbosity.")
-    parser.add_argument('--quiet', '-q', action='store_true', help="Only print critical log messages.")
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Increase log verbosity."
+    )
+    parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Only print critical log messages."
+    )
 
     subparsers = parser.add_subparsers(dest="action")
 
-    build_parser = subparsers.add_parser('build', help="Build one or more cpp source files.",)
-    build_parser.add_argument('root',
-                              help="The file or directory to build. If a directory is given, "
-                                   "cppimport walks it recursively to build all eligible source "
-                                   "files.",
-                              nargs='*')
+    build_parser = subparsers.add_parser(
+        "build",
+        help="Build one or more cpp source files.",
+    )
+    build_parser.add_argument(
+        "root",
+        help="The file or directory to build. If a directory is given, "
+        "cppimport walks it recursively to build all eligible source "
+        "files.",
+        nargs="*",
+    )
 
     args = parser.parse_args(raw_args[1:])
 
@@ -172,18 +180,20 @@ def _run_from_commandline(raw_args):
     else:
         logging.basicConfig(level=logging.INFO)
 
-    if args.action == 'build':
-        for path in args.root or ['.']:
+    if args.action == "build":
+        for path in args.root or ["."]:
             path = os.path.abspath(os.path.expandvars(path))
             if os.path.isfile(path):
                 build_filepath(path)
             elif os.path.isdir(path):
                 build_all(path or os.getcwd())
             else:
-                raise FileNotFoundError(f"The given root path \"{path}\" could not be found.")
+                raise FileNotFoundError(
+                    f'The given root path "{path}" could not be found.'
+                )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _run_from_commandline(sys.argv)
 
 
@@ -207,4 +217,3 @@ def turn_off_strict_prototypes():
 
 def set_rtld_flags(flags):
     settings["rtld_flags"] = flags
-

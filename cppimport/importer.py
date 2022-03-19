@@ -65,11 +65,17 @@ def load_module(module_data):
 
 def is_build_needed(module_data):
     if cppimport.settings["force_rebuild"]:
+        return True
+    if cppimport.settings["release_mode"]:
+        logger.debug(
+            f"Release mode is enabled. Thus, file {module_data['filepath']} is "
+            f"not being compiled."
+        )
         return False
-    if not cppimport.settings['skip_checksum_check'] or not is_checksum_valid(module_data):
-        return False
+    if not is_checksum_valid(module_data):
+        return True
     logger.debug(f"Matching checksum for {module_data['filepath']} --> not compiling")
-    return True
+    return False
 
 
 def try_load(module_data):
