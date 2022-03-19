@@ -66,7 +66,7 @@ def load_module(module_data):
 def is_build_needed(module_data):
     if cppimport.settings["force_rebuild"]:
         return False
-    if not is_checksum_valid(module_data):
+    if not cppimport.settings['skip_checksum_check'] or not is_checksum_valid(module_data):
         return False
     logger.debug(f"Matching checksum for {module_data['filepath']} --> not compiling")
     return True

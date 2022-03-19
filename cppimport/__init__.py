@@ -15,6 +15,7 @@ settings = dict(
     file_exts=[".cpp", ".c"],
     rtld_flags=ctypes.RTLD_LOCAL,
     remove_strict_prototypes=True,
+    skip_checksum_check=os.getenv('CPPIMPORT_SKIP_CHECKSUM_CHECK', '0').lower() in ('true', 'yes', '1'),
 )
 _logger = logging.getLogger('cppimport')
 
@@ -160,7 +161,7 @@ def _run_from_commandline(raw_args):
                               help="The file or directory to build. If a directory is given, "
                                    "cppimport walks it recursively to build all eligible source "
                                    "files.",
-                              nargs='?')
+                              nargs='*')
 
     args = parser.parse_args(raw_args[1:])
 
@@ -172,13 +173,14 @@ def _run_from_commandline(raw_args):
         logging.basicConfig(level=logging.INFO)
 
     if args.action == 'build':
-        root = os.path.abspath(os.path.expandvars(args.root)) if args.root else None
-        if root and os.path.isfile(root):
-            build_filepath(root)
-        elif not root or os.path.isdir(root):
-            build_all(root or os.getcwd())
-        else:
-            raise FileNotFoundError(f"The given root path \"{root}\" could not be found.")
+        for path in args.root or ['.']:
+            path = os.path.abspath(os.path.expandvars(path))
+            if os.path.isfile(path):
+                build_filepath(path)
+            elif os.path.isdir(path):
+                build_all(path or os.getcwd())
+            else:
+                raise FileNotFoundError(f"The given root path \"{path}\" could not be found.")
 
 
 if __name__ == '__main__':
