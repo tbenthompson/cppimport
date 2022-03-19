@@ -1,4 +1,3 @@
-// cppimport
 /*
 <%
 import pybind11
