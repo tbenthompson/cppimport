@@ -3,6 +3,9 @@ import logging
 import os
 import sys
 import sysconfig
+from contextlib import suppress
+from time import time, sleep
+import filelock
 
 import cppimport
 from cppimport.build_module import build_module
@@ -10,6 +13,36 @@ from cppimport.checksum import checksum_save, is_checksum_valid
 from cppimport.templating import run_templating
 
 logger = logging.getLogger(__name__)
+
+
+def build_safely(filepath, module_data):
+    """Protect against race conditions when multiple processes executing `template_and_build`"""
+    binary_path = module_data['ext_path']
+    lock_path = binary_path + cppimport.settings['lock_suffix']
+
+    build_completed = lambda: os.path.exists(binary_path) and is_checksum_valid(module_data)
+
+    t = time()
+
+    # Race to obtain the lock and build. Other processes can wait
+    while not build_completed() and time() - t < cppimport.settings['lock_timeout']:
+        try:
+            with filelock.FileLock(lock_path, timeout=1):
+                if build_completed():
+                    break
+                template_and_build(filepath, module_data)
+        except filelock.Timeout:
+            logging.debug(f'{os.getpid()}: Could not obtain lock')
+            sleep(1)
+
+    if os.path.exists(lock_path):
+        with suppress(OSError):
+            os.remove(lock_path)
+
+    if not build_completed():
+        raise Exception(
+            f'Could not compile binary as lock already taken and timed out. Try increasing the timeout setting if '
+            f'the build time is longer.')
 
 
 def template_and_build(filepath, module_data):
@@ -77,13 +110,3 @@ def is_build_needed(module_data):
     logger.debug(f"Matching checksum for {module_data['filepath']} --> not compiling")
     return False
 
-
-def try_load(module_data):
-    try:
-        load_module(module_data)
-        return True
-    except ImportError as e:
-        logger.info(
-            f"ImportError during import with matching checksum: {e}. Trying to rebuild."
-        )
-        return False
