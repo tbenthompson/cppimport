@@ -3,3 +3,9 @@ profile = "black"
 
 [tool.pytest.ini_options]
 addopts = "-s --tb=short"
+
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
