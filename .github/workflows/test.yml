@@ -62,6 +62,10 @@ jobs:
         activate-environment: cppimport
         environment-file: environment.yml
         python-version: ${{ matrix.python-version }}
+    - name: Get history and tags for SCM versioning to work
+      run: |
+        git fetch --prune --unshallow
+        git fetch --depth=1 origin +refs/tags/*:refs/tags/*
     - name: Build sdist
       run: >- 
         python setup.py sdist
