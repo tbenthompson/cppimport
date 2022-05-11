@@ -1,12 +1,13 @@
 PUBLISH TO PYPI:
 update the version number in VERSION with calver: yy.mm.dd
-python setup.py sdist upload -r pypi
+python setup.py sdist
+twine upload dist/cppimport-VERSION.tar.gz
 
 SANITY TEST: 
 open new terminal
 mamba create -n testenv python=3 pip
 conda activate testenv
-pip install cppimport
+pip install --force-reinstall --no-cache cppimport
 cd tests
 python -c 'import cppimport; assert(cppimport.imp("mymodule").add(1,2) == 3);'
 
