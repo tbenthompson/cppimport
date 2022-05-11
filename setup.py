@@ -5,6 +5,8 @@ version = open("VERSION").read()
 description = open("README.md").read()
 
 setup(
+    use_scm_version={"version_scheme": "post-release"},
+    setup_requires=["setuptools_scm"],
     packages=["cppimport"],
     install_requires=["mako", "pybind11"],
     zip_safe=False,

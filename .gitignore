@@ -12,3 +12,5 @@ dist
 .mypy_cache/
 .coverage
 htmlcov
+**/.DS_Store
+.eggs
