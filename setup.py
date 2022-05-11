@@ -1,7 +1,5 @@
 from setuptools import setup
 
-version = open("VERSION").read()
-
 description = open("README.md").read()
 
 setup(
@@ -11,7 +9,6 @@ setup(
     install_requires=["mako", "pybind11"],
     zip_safe=False,
     name="cppimport",
-    version=version,
     description="Import C++ files directly from Python!",
     long_description=description,
     long_description_content_type="text/markdown",
