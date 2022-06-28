@@ -50,12 +50,17 @@ def subprocess_check(test_code, returncode=0):
 
 @contextlib.contextmanager
 def tmp_dir(files=None):
+    """Create a temporary directory and copy `files` into it. `files` can also include directories."""
     files = files if files else []
 
     with TemporaryDirectory() as tmp_path:
         for f in files:
-            shutil.copyfile(f, os.path.join(tmp_path, f))
+            if os.path.isdir(f):
+                shutil.copytree(f, os.path.join(tmp_path, os.path.basename(f)))
+            else:
+                shutil.copyfile(f, os.path.join(tmp_path, os.path.basename(f)))
         yield tmp_path
+
 
 def test_find_module_cpppath():
     mymodule_loc = find_module_cpppath("mymodule")
