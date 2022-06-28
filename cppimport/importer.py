@@ -32,7 +32,7 @@ def build_safely(filepath, module_data):
                     break
                 template_and_build(filepath, module_data)
         except filelock.Timeout:
-            logging.debug(f'{os.getpid()}: Could not obtain lock')
+            logging.debug(f'Could not obtain lock (pid {os.getpid()})')
             sleep(1)
 
     if os.path.exists(lock_path):
@@ -42,7 +42,7 @@ def build_safely(filepath, module_data):
     if not build_completed():
         raise Exception(
             f'Could not compile binary as lock already taken and timed out. Try increasing the timeout setting if '
-            f'the build time is longer.')
+            f'the build time is longer (pid {os.getpid()}).')
 
 
 def template_and_build(filepath, module_data):
