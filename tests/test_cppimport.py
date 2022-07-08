@@ -43,14 +43,17 @@ def subprocess_check(test_code, returncode=0):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    print(p.stdout.decode("utf-8"))
-    print(p.stderr.decode("utf-8"))
+    if len(p.stdout) > 0:
+        print(p.stdout.decode("utf-8"))
+    if len(p.stderr) > 0:
+        print(p.stderr.decode("utf-8"))
     assert p.returncode == returncode
 
 
 @contextlib.contextmanager
 def tmp_dir(files=None):
-    """Create a temporary directory and copy `files` into it. `files` can also include directories."""
+    """Create a temporary directory and copy `files` into it. `files` can also
+    include directories."""
     files = files if files else []
 
     with TemporaryDirectory() as tmp_path:
@@ -190,14 +193,16 @@ def test_import_hook():
 
 
 def test_multiple_processes():
-    with tmp_dir(['hook_test.cpp']) as tmp_path:
+    with tmp_dir(["tests/hook_test.cpp"]) as tmp_path:
         test_code = f"""
 import os;
 os.chdir('{tmp_path}');
 import cppimport.import_hook;
 import hook_test;
         """
-        processes = [Process(target=subprocess_check, args=(test_code, )) for i in range(100)]
+        processes = [
+            Process(target=subprocess_check, args=(test_code,)) for i in range(100)
+        ]
 
         for p in processes:
             p.start()

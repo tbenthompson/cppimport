@@ -11,8 +11,8 @@ settings = dict(
     force_rebuild=False,  # `force_rebuild` with multiple processes is not supported
     file_exts=[".cpp", ".c"],
     rtld_flags=ctypes.RTLD_LOCAL,
-    lock_suffix='.lock',
-    lock_timeout=10*60,
+    lock_suffix=".lock",
+    lock_timeout=10 * 60,
     remove_strict_prototypes=True,
     release_mode=os.getenv("CPPIMPORT_RELEASE_MODE", "0").lower()
     in ("true", "yes", "1"),
@@ -59,16 +59,23 @@ def imp_from_filepath(filepath, fullname=None):
     module : the compiled and loaded Python extension module
     """
     from cppimport.importer import (
+        build_safely,
         is_build_needed,
         load_module,
         setup_module_data,
-        build_safely,
         try_load,
     )
+
     filepath = os.path.abspath(filepath)
     if fullname is None:
         fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
+    # The call to try_load is necessary here because there are times when the
+    # only evidence a rebuild is needed comes from attempting to load an
+    # existing extension module. For example, if the extension was built on a
+    # different architecture or with different Python headers and will produce
+    # an error when loaded, then the load will fail. In that situation, we will
+    # need to rebuild.
     if is_build_needed(module_data) or not try_load(module_data):
         build_safely(filepath, module_data)
     load_module(module_data)
@@ -110,11 +117,12 @@ def build_filepath(filepath, fullname=None):
     ext_path : the path to the compiled extension.
     """
     from cppimport.importer import (
-        is_build_needed,
-        setup_module_data,
         build_safely,
+        is_build_needed,
         load_module,
+        setup_module_data,
     )
+
     filepath = os.path.abspath(filepath)
     if fullname is None:
         fullname = os.path.splitext(os.path.basename(filepath))[0]

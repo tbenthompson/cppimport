@@ -45,6 +45,9 @@ def _load_checksum_trailer(module_data):
     except FileNotFoundError:
         logger.info("Failed to find compiled extension; rebuilding.")
         return None, None
+    except OSError:
+        logger.info("Checksum trailer invalid. Rebuilding.")
+        return None, None
 
     try:
         deps, old_checksum = json.loads(json_s)
@@ -79,7 +82,7 @@ def _save_checksum_trailer(module_data, dep_filepaths, cur_checksum):
     # legal (see e.g. https://stackoverflow.com/questions/10106447).
     dump = json.dumps([dep_filepaths, cur_checksum]).encode("ascii")
     dump += _FMT.pack(len(dump), _TAG)
-    with open(module_data["ext_path"], "ab") as file:
+    with open(module_data["ext_path"], "ab", buffering=0) as file:
         file.write(dump)
 
 
