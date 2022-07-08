@@ -157,6 +157,22 @@ cppimport.settings['force_rebuild'] = True
 
 And if this is a common occurence, I would love to hear your use case and why the combination of the checksum, `cfg['dependencies']` and `cfg['sources']` is insufficient!
 
+Note that `force_rebuild` does not work when importing the module concurrently.
+
+### Can I import my model concurrently?
+
+It's safe to use `cppimport` to import a module concurrently using multiple threads, processes or even machines!
+
+Before building a module, `cppimport` obtains a lockfile preventing other processors from building it at the same time - this prevents clashes that can lead to failure.
+Other processes will wait maximum 10 mins until the first process has built the module and load it. If your module does not build within 10 mins then it will timeout.
+You can increase the timeout time in the settings:
+
+```python
+cppimport.settings['lock_timeout'] = 10*60 # 10 mins
+```
+
+You should not use `force_rebuild` when importing concurrently.
+
 ### How can I get information about filepaths in the configuration block?
 The module name is available as the `fullname` variable and the C++ module file is available as `filepath`.
 For example,

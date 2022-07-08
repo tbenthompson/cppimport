@@ -110,3 +110,16 @@ def is_build_needed(module_data):
     logger.debug(f"Matching checksum for {module_data['filepath']} --> not compiling")
     return False
 
+
+def try_load(module_data):
+    """Try loading the module to test if it's not corrupt and for the correct architecture"""
+    try:
+        load_module(module_data)
+        return True
+    except ImportError as e:
+        logger.info(
+            f"ImportError during import with matching checksum: {e}. Trying to rebuild."
+        )
+        with suppress(OSError):
+            os.remove(module_data["fullname"])
+        return False

@@ -63,12 +63,13 @@ def imp_from_filepath(filepath, fullname=None):
         load_module,
         setup_module_data,
         build_safely,
+        try_load,
     )
     filepath = os.path.abspath(filepath)
     if fullname is None:
         fullname = os.path.splitext(os.path.basename(filepath))[0]
     module_data = setup_module_data(fullname, filepath)
-    if is_build_needed(module_data):
+    if is_build_needed(module_data) or not try_load(module_data):
         build_safely(filepath, module_data)
     load_module(module_data)
     return module_data["module"]
