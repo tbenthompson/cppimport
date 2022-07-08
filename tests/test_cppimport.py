@@ -43,8 +43,10 @@ def subprocess_check(test_code, returncode=0):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    print(p.stdout.decode("utf-8"))
-    print(p.stderr.decode("utf-8"))
+    if len(p.stdout) > 0:
+        print(p.stdout.decode("utf-8"))
+    if len(p.stderr) > 0:
+        print(p.stderr.decode("utf-8"))
     assert p.returncode == returncode
 
 

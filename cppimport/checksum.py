@@ -45,6 +45,9 @@ def _load_checksum_trailer(module_data):
     except FileNotFoundError:
         logger.info("Failed to find compiled extension; rebuilding.")
         return None, None
+    except OSError:
+        logger.info("Checksum trailer invalid. Rebuilding.")
+        return None, None
 
     try:
         deps, old_checksum = json.loads(json_s)
