@@ -23,7 +23,10 @@ def build_safely(filepath, module_data):
     lock_path = binary_path + cppimport.settings["lock_suffix"]
 
     def build_completed():
-        return os.path.exists(binary_path) and is_checksum_valid(module_data)
+        try:
+            return os.path.exists(binary_path) and is_checksum_valid(module_data)
+        except OSError:
+            return False
 
     t = time()
 
