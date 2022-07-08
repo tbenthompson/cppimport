@@ -6,7 +6,7 @@ setup(
     use_scm_version={"version_scheme": "post-release"},
     setup_requires=["setuptools_scm"],
     packages=["cppimport"],
-    install_requires=["mako", "pybind11"],
+    install_requires=["mako", "pybind11", "filelock"],
     zip_safe=False,
     name="cppimport",
     description="Import C++ files directly from Python!",

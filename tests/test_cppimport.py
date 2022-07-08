@@ -2,8 +2,11 @@ import contextlib
 import copy
 import logging
 import os
+import shutil
 import subprocess
 import sys
+from multiprocessing import Process
+from tempfile import TemporaryDirectory
 
 import cppimport
 import cppimport.build_module
@@ -40,9 +43,26 @@ def subprocess_check(test_code, returncode=0):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    print(p.stdout.decode("utf-8"))
-    print(p.stderr.decode("utf-8"))
+    if len(p.stdout) > 0:
+        print(p.stdout.decode("utf-8"))
+    if len(p.stderr) > 0:
+        print(p.stderr.decode("utf-8"))
     assert p.returncode == returncode
+
+
+@contextlib.contextmanager
+def tmp_dir(files=None):
+    """Create a temporary directory and copy `files` into it. `files` can also
+    include directories."""
+    files = files if files else []
+
+    with TemporaryDirectory() as tmp_path:
+        for f in files:
+            if os.path.isdir(f):
+                shutil.copytree(f, os.path.join(tmp_path, os.path.basename(f)))
+            else:
+                shutil.copyfile(f, os.path.join(tmp_path, os.path.basename(f)))
+        yield tmp_path
 
 
 def test_find_module_cpppath():
@@ -170,3 +190,24 @@ def test_import_hook():
 
     cppimport.force_rebuild(False)
     hook_test
+
+
+def test_multiple_processes():
+    with tmp_dir(["tests/hook_test.cpp"]) as tmp_path:
+        test_code = f"""
+import os;
+os.chdir('{tmp_path}');
+import cppimport.import_hook;
+import hook_test;
+        """
+        processes = [
+            Process(target=subprocess_check, args=(test_code,)) for i in range(100)
+        ]
+
+        for p in processes:
+            p.start()
+
+        for p in processes:
+            p.join()
+
+        assert all(p.exitcode == 0 for p in processes)

@@ -3,6 +3,10 @@ import logging
 import os
 import sys
 import sysconfig
+from contextlib import suppress
+from time import sleep, time
+
+import filelock
 
 import cppimport
 from cppimport.build_module import build_module
@@ -10,6 +14,46 @@ from cppimport.checksum import checksum_save, is_checksum_valid
 from cppimport.templating import run_templating
 
 logger = logging.getLogger(__name__)
+
+
+def build_safely(filepath, module_data):
+    """Protect against race conditions when multiple processes executing
+    `template_and_build`"""
+    binary_path = module_data["ext_path"]
+    lock_path = binary_path + cppimport.settings["lock_suffix"]
+
+    def build_completed():
+        return os.path.exists(binary_path) and is_checksum_valid(module_data)
+
+    t = time()
+
+    # Race to obtain the lock and build. Other processes can wait
+    while not build_completed() and time() - t < cppimport.settings["lock_timeout"]:
+        try:
+            with filelock.FileLock(lock_path, timeout=1):
+                if build_completed():
+                    break
+                template_and_build(filepath, module_data)
+        except filelock.Timeout:
+            logging.debug(f"Could not obtain lock (pid {os.getpid()})")
+            if cppimport.settings["force_rebuild"]:
+                raise ValueError(
+                    "force_build must be False to build concurrently."
+                    "This process failed to claim a filelock indicating that"
+                    " a concurrent build is in progress"
+                )
+            sleep(1)
+
+    if os.path.exists(lock_path):
+        with suppress(OSError):
+            os.remove(lock_path)
+
+    if not build_completed():
+        raise Exception(
+            f"Could not compile binary as lock already taken and timed out."
+            f" Try increasing the timeout setting if "
+            f"the build time is longer (pid {os.getpid()})."
+        )
 
 
 def template_and_build(filepath, module_data):
@@ -79,6 +123,8 @@ def is_build_needed(module_data):
 
 
 def try_load(module_data):
+    """Try loading the module to test if it's not corrupt and for the correct
+    architecture"""
     try:
         load_module(module_data)
         return True
@@ -86,4 +132,6 @@ def try_load(module_data):
         logger.info(
             f"ImportError during import with matching checksum: {e}. Trying to rebuild."
         )
+        with suppress(OSError):
+            os.remove(module_data["fullname"])
         return False
