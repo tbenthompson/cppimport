@@ -25,7 +25,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install cppimport
       run: |
-        pip install --no-use-pep517 --no-deps --disable-pip-version-check -e .
+        pip install --no-deps -e .
     - name: Lint with flake8
       run: |
         flake8 . 
