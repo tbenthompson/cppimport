@@ -1,4 +1,4 @@
-/*
+/* cppimport
 <%
 import pybind11
 cfg['compiler_args'] = ['-std=c++11']

@@ -189,7 +189,30 @@ def test_import_hook():
     import hook_test
 
     cppimport.force_rebuild(False)
-    hook_test
+    assert hook_test.sub(3, 1) == 2
+
+
+def test_submodule_import_hook():
+    import cppimport.import_hook
+
+    # Force rebuild to make sure we're not just reloading the already compiled
+    # module from disk
+    cppimport.force_rebuild(True)
+    import apackage.mymodule
+
+    cppimport.force_rebuild(False)
+    assert apackage.mymodule.add(3, 1) == 4
+
+
+def test_relative_import():
+    import cppimport.import_hook
+
+    cppimport.force_rebuild(True)
+    from apackage.rel_import_tester import f
+
+    cppimport.force_rebuild(False)
+    print(f())
+    assert f() == 3
 
 
 def test_multiple_processes():

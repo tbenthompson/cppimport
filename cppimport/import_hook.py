@@ -11,7 +11,8 @@ class Hook(object):
     def __init__(self):
         self._running = False
 
-    def find_module(self, fullname, path=None):
+    def find_spec(self, fullname, path, target=None):
+        print("find_spec", fullname, path, target)
         # Prevent re-entry by the underlying importer
         if self._running:
             return

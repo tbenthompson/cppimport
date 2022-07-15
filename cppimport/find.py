@@ -1,8 +1,11 @@
+import logging
 import os
 import sys
 
 import cppimport
 from cppimport.filepaths import make_absolute
+
+logger = logging.getLogger(__name__)
 
 
 def find_module_cpppath(modulename, opt_in=False):
@@ -67,6 +70,10 @@ def _find_file_in_folders(filename, paths, opt_in):
                 continue
             filepath = os.path.join(d, f)
             if opt_in and not _check_first_line_contains_cppimport(filepath):
+                logger.debug(
+                    "Found file but the first line doesn't "
+                    "contain cppimport so it will be skipped: " + filepath
+                )
                 continue
             return filepath
     return None

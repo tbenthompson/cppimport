@@ -6,7 +6,7 @@
     <a target="_blank" href="https://pypi.org/project/cppimport/" title="PyPI"><img src="https://img.shields.io/pypi/dm/cppimport"></a>
     <a target="_blank" href="LICENSE" title="License: MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
     <a target="_blank" href="https://github.com/tbenthompson/cppimport/actions" title="Test Status"><img src="https://github.com/tbenthompson/cppimport/actions/workflows/test.yml/badge.svg"></a>
-    <a target="_blank" href="https://codecov.io/gh/tbenthompson/cppimport" title="Code coverage"><img src="https://codecov.io/gh/tbenthompson/cppimport/branch/stable/graph/badge.svg?token=GWpX62xMt5"/></a>
+    <a target="_blank" href="https://codecov.io/gh/tbenthompson/cppimport" title="Code coverage"><img src="https://codecov.io/gh/tbenthompson/cppimport/branch/main/graph/badge.svg?token=GWpX62xMt5"/></a>
 </a>
 
 </p>
