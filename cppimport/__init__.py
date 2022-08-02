@@ -7,6 +7,13 @@ import os
 
 from cppimport.find import _check_first_line_contains_cppimport
 
+try:
+    from ._version import version as __version__
+    from ._version import version_tuple
+except ImportError:
+    __version__ = "unknown version"
+    version_tuple = (0, 0, "unknown version")
+
 settings = dict(
     force_rebuild=False,  # `force_rebuild` with multiple processes is not supported
     file_exts=[".cpp", ".c"],
