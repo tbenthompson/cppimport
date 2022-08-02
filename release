@@ -1,14 +1,12 @@
 GIT:
 git commit -m "yy.mm.dd" 
-git tag yy.mm.dd
+git tag -a 22.08.02 -m "22.08.02"
 git push --atomic origin main yy.mm.dd
 wait for github action to complete
 create release on github
 
-SANITY TEST: 
-open new terminal
-mamba create -n testenv python=3 pip
-conda activate testenv
-pip install --force-reinstall --no-cache cppimport
-cd tests
-python -c 'import cppimport; assert(cppimport.imp("mymodule").add(1,2) == 3);'
+remaining tasks to automate in the publish CI workflow:
+- publish to test pypi first
+- then, check the published package
+- then, republish to real pypi
+- then, run the automatic release action.
