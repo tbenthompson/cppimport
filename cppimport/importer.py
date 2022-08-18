@@ -16,6 +16,22 @@ from cppimport.templating import run_templating
 logger = logging.getLogger(__name__)
 
 
+class add_to_sys_path:
+    """A Context Manager to temporary add a path to sys.path"""
+
+    def __init__(self, path):
+        self.path = path
+
+    def __enter__(self):
+        sys.path.insert(0, self.path)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            sys.path.remove(self.path)
+        except ValueError:
+            pass
+
+
 def build_safely(filepath, module_data):
     """Protect against race conditions when multiple processes executing
     `template_and_build`"""
@@ -88,7 +104,8 @@ def get_extension_suffix():
 
 
 def _actually_load_module(module_data):
-    module_data["module"] = importlib.import_module(module_data["fullname"])
+    with add_to_sys_path(module_data["filedirname"]):
+        module_data["module"] = importlib.import_module(module_data["fullname"])
 
 
 def load_module(module_data):
