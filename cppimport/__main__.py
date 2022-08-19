@@ -16,7 +16,8 @@ def _run_from_commandline(raw_args):
         "--quiet", "-q", action="store_true", help="Only print critical log messages."
     )
 
-    subparsers = parser.add_subparsers(dest="action", required=True)
+    subparsers = parser.add_subparsers(dest="action")
+    subparsers.required = True
 
     build_parser = subparsers.add_parser(
         "build",
