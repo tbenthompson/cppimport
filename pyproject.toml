@@ -1,5 +1,9 @@
 [tool.isort]
 profile = "black"
+# distutils is leaving stdlib. setuptools provides a compatibility import, but needs to be imported first
+known_thirdparty = ["distutils"]
+known_setuptools = ["setuptools"]
+sections = ["FUTURE", "STDLIB", "SETUPTOOLS", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 
 [tool.pytest.ini_options]
 addopts = "-s --tb=short"
