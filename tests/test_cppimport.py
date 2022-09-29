@@ -38,7 +38,7 @@ def appended(filename, text):
 
 def subprocess_check(test_code, returncode=0):
     p = subprocess.run(
-        ["python", "-c", test_code],
+        [sys.executable, "-c", test_code],
         cwd=os.path.dirname(__file__),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
