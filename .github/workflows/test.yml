@@ -51,10 +51,6 @@ jobs:
       if: ${{ matrix.os != 'macos-latest' }}
       run: |
         pytest --cov=./ --cov-report=xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        fail_ci_if_error: true
   build-and-publish:
     # based on https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
     # also see: https://github.com/marketplace/actions/pypi-publish#advanced-release-management
