@@ -80,5 +80,5 @@ def _find_file_in_folders(filename, paths, opt_in):
 
 
 def _check_first_line_contains_cppimport(filepath):
-    with open(filepath, "r") as f:
-        return "cppimport" in f.readline()
+    with open(filepath, "rb") as f:
+        return b"cppimport" in f.readline()
