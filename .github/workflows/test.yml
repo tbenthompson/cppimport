@@ -75,7 +75,16 @@ jobs:
         python setup.py sdist
     - name: Publish distribution 📦 to PyPI
       if: startsWith(github.ref, 'refs/tags')
-      uses: pypa/gh-action-pypi-publish@master
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
         verbose: true
+    - name: Check published package
+      if: startsWith(github.ref, 'refs/tags')
+      run: |
+        mamba create -n testenv python=3 pip
+        conda activate testenv
+        pip install --force-reinstall --no-cache cppimport
+        pushd tests
+        python -c 'import cppimport; assert(cppimport.imp("mymodule").add(1,2) == 3);'
+        popd
