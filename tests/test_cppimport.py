@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import sys
+import pytest
 from multiprocessing import Process
 from tempfile import TemporaryDirectory
 
@@ -12,6 +13,10 @@ import cppimport
 import cppimport.build_module
 import cppimport.templating
 from cppimport.find import find_module_cpppath
+
+cppimport.settings["use_filelock"] = False  # No need for filelock except for
+                                            # multiprocessing test.
+multiprocessing_enable = pytest.mark.skipif("not config.getoption('multiprocessing')")
 
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
@@ -21,7 +26,6 @@ handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 root_logger.addHandler(handler)
-
 
 @contextlib.contextmanager
 def appended(filename, text):
@@ -127,8 +131,11 @@ def test_with_file_in_syspath():
 def test_rebuild_after_failed_compile():
     cppimport.imp("mymodule")
     test_code = """
-import cppimport; mymodule = cppimport.imp("mymodule");assert(mymodule.add(1,2) == 3)
-"""
+import cppimport; 
+cppimport.settings["use_filelock"] = False; 
+mymodule = cppimport.imp("mymodule");
+assert(mymodule.add(1,2) == 3)
+    """
     with appended("tests/mymodule.cpp", ";asdf;"):
         subprocess_check(test_code, 1)
     subprocess_check(test_code, 0)
@@ -149,6 +156,7 @@ def test_no_rebuild_if_no_deps_change():
     cppimport.imp("mymodule")
     test_code = """
 import cppimport;
+cppimport.settings["use_filelock"] = False; 
 mymodule = cppimport.imp("mymodule");
 assert(not hasattr(mymodule, 'Thing'))
 """
@@ -160,6 +168,7 @@ def test_rebuild_header_after_change():
     cppimport.imp("mymodule")
     test_code = """
 import cppimport;
+cppimport.settings["use_filelock"] = False; 
 mymodule = cppimport.imp("mymodule");
 mymodule.Thing().cheer()
 """
@@ -214,8 +223,12 @@ def test_relative_import():
     print(f())
     assert f() == 3
 
-
+@multiprocessing_enable
 def test_multiple_processes():
+    '''
+    Only runs if the flag --multiprocessing is passed to
+    pytest. This function requires file locking enabled. 
+    '''
     with tmp_dir(["tests/hook_test.cpp"]) as tmp_path:
         test_code = f"""
 import os;
