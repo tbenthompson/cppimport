@@ -174,28 +174,33 @@ cppimport.settings['lock_timeout'] = 10*60 # 10 mins
 
 You should not use `force_rebuild` when importing concurrently.
 
-### The lockfile keeps timing out unexpectedly - what's going on?
+### Acquiring the lock hangs or times out unexpectedly - what's going on?
 Certain filesystems do not support file locking. You can disable the lock
-in the settings (must be set before you import any extension). 
+in the settings:
 
 ```python
 cppimport.settings['use_filelock'] = False 
 ```
 
-In this case, you are responsible for ensuring that only a single process
-(re)builds the package at a time. If you're using [mpi4py](https://mpi4py.readthedocs.io/en/stable/),
-to run independent, communicating processes, here's an example of how that might work: 
+This setting must be changed before you import any
+code. By setting `use_filelock=False`, you become responsible 
+for ensuring that only a single process
+(re)builds the package at a time. For example: if you're
+using [mpi4py](https://mpi4py.readthedocs.io/en/stable/)
+to run independent, communicating processes, here's how 
+to protect the build:
 
 ```python
 from mpi4py import MPI
-import cppimport.import_hook
+import cppimport, cppimport.import_hook
+cppimport.settings["use_filelock"] = False
 
 pid = MPI.COMM_WORLD.Get_rank()
 
 if pid == 0:
-    import my_cpp_extension  # Process 0 compiles the extension if necessary 
-MPI.COMM_WORLD.Barrier()     # Remaining processors wait 
-import my_cpp_extension      # All processes can use compiled extension 
+    import somecode      # Process 0 compiles extension if needed 
+MPI.COMM_WORLD.Barrier() # Remaining processes wait 
+import somecode          # All processes use compiled extension 
 ```
 
 ### How can I get information about filepaths in the configuration block?
