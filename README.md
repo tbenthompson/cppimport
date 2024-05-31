@@ -175,8 +175,17 @@ cppimport.settings['lock_timeout'] = 10*60 # 10 mins
 You should not use `force_rebuild` when importing concurrently.
 
 ### Acquiring the lock hangs or times out unexpectedly - what's going on?
-Certain filesystems do not support file locking. You can disable the lock
-in the settings:
+Certain platforms (e.g. those running 
+a Data Virtualization Service, DVS) do not support file locking. If you're on Linux with access to `flock`, you can test whether
+locking is supported (credit to [this page](https://help.univention.com/t/howto-verify-the-mounted-filesystem-supports-file-locking/10149)):
+
+```bash
+touch testfile
+flock ./testfile true && echo ok || echo nok
+```
+
+If locking is not supported, you can disable the file lock in
+the cppimport global settings: 
 
 ```python
 cppimport.settings['use_filelock'] = False 
