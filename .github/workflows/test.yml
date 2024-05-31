@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-latest"]
-        python-version: [ "3.7", "3.8", "3.9", "3.10"]
+        python-version: [ "3.8", "3.9", "3.10"]
     name: Test (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on:  ${{ matrix.os }}
     defaults:
@@ -24,7 +24,7 @@ jobs:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         mamba-version: "*"
         channels: conda-forge
@@ -58,7 +58,7 @@ jobs:
     name: Build and publish Python distributions to PyPI and TestPyPI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: conda-incubator/setup-miniconda@v2
       with:
         mamba-version: "*"

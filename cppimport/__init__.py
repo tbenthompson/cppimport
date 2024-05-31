@@ -1,6 +1,7 @@
 """
 See CONTRIBUTING.md for a description of the project structure and the internal logic.
 """
+
 import ctypes
 import logging
 import os
@@ -18,6 +19,7 @@ settings = dict(
     force_rebuild=False,  # `force_rebuild` with multiple processes is not supported
     file_exts=[".cpp", ".c"],
     rtld_flags=ctypes.RTLD_LOCAL,
+    use_filelock=True,  # Filelock if multiple processes try to build simultaneously
     lock_suffix=".lock",
     lock_timeout=10 * 60,
     remove_strict_prototypes=True,

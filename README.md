@@ -161,7 +161,8 @@ Note that `force_rebuild` does not work when importing the module concurrently.
 
 ### Can I import my model concurrently?
 
-It's safe to use `cppimport` to import a module concurrently using multiple threads, processes or even machines!
+It's (mostly) safe to use `cppimport` to import a module concurrently using multiple threads, processes or even machines!
+There's an exception if your filesystem does not support file locking - see the next section. 
 
 Before building a module, `cppimport` obtains a lockfile preventing other processors from building it at the same time - this prevents clashes that can lead to failure.
 Other processes will wait maximum 10 mins until the first process has built the module and load it. If your module does not build within 10 mins then it will timeout.
@@ -172,6 +173,44 @@ cppimport.settings['lock_timeout'] = 10*60 # 10 mins
 ```
 
 You should not use `force_rebuild` when importing concurrently.
+
+### Acquiring the lock hangs or times out unexpectedly - what's going on?
+Certain platforms (e.g. those running 
+a Data Virtualization Service, DVS) do not support file locking. If you're on Linux with access to `flock`, you can test whether
+locking is supported (credit to [this page](https://help.univention.com/t/howto-verify-the-mounted-filesystem-supports-file-locking/10149)):
+
+```bash
+touch testfile
+flock ./testfile true && echo ok || echo nok
+```
+
+If locking is not supported, you can disable the file lock in
+the cppimport global settings: 
+
+```python
+cppimport.settings['use_filelock'] = False 
+```
+
+This setting must be changed before you import any
+code. By setting `use_filelock=False`, you become responsible 
+for ensuring that only a single process
+(re)builds the package at a time. For example: if you're
+using [mpi4py](https://mpi4py.readthedocs.io/en/stable/)
+to run independent, communicating processes, here's how 
+to protect the build:
+
+```python
+from mpi4py import MPI
+import cppimport, cppimport.import_hook
+cppimport.settings["use_filelock"] = False
+
+pid = MPI.COMM_WORLD.Get_rank()
+
+if pid == 0:
+    import somecode      # Process 0 compiles extension if needed 
+MPI.COMM_WORLD.Barrier() # Remaining processes wait 
+import somecode          # All processes use compiled extension 
+```
 
 ### How can I get information about filepaths in the configuration block?
 The module name is available as the `fullname` variable and the C++ module file is available as `filepath`.
