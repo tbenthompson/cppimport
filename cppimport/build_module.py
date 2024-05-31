@@ -98,7 +98,7 @@ def _handle_strict_prototypes():
 
     cfg_vars = distutils.sysconfig.get_config_vars()
     for key, value in cfg_vars.items():
-        if type(value) == str:
+        if value is str:
             cfg_vars[key] = value.replace("-Wstrict-prototypes", "")
 
 
@@ -144,7 +144,6 @@ def _parallel_compile(
     extra_postargs=None,
     depends=None,
 ):
-
     # these lines are copied directly from distutils.ccompiler.CCompiler
     macros, objects, extra_postargs, pp_opts, build = self._setup_compile(
         output_dir, macros, include_dirs, sources, depends, extra_postargs

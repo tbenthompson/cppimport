@@ -43,7 +43,7 @@ def build_safely(filepath, module_data):
 
     t = time()
 
-    if cppimport.settings['use_filelock']:
+    if cppimport.settings["use_filelock"]:
         # Race to obtain the lock and build. Other processes can wait
         while not build_completed() and time() - t < cppimport.settings["lock_timeout"]:
             try:
